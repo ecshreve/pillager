@@ -10,8 +10,6 @@ Package hunter contains the types\, methods\, and interfaces for the file huntin
 
 ## Index
 
-- [Constants](<#constants>)
-- [func RenderTemplate(w *os.File, tpl string, f scan.Report)](<#func-rendertemplate>)
 - [type Hound](<#type-hound>)
   - [func NewHound(f config.Format, t *string) *Hound](<#func-newhound>)
   - [func (h *Hound) Howl()](<#func-hound-howl>)
@@ -20,29 +18,7 @@ Package hunter contains the types\, methods\, and interfaces for the file huntin
   - [func (h *Hunter) Hunt() error](<#func-hunter-hunt>)
 
 
-## Constants
-
-DefaultTemplate is the base template used to format a Finding into the custom output format\.
-
-```go
-const DefaultTemplate = `{{ with . -}}
-{{ range .Leaks -}}
-Line: {{.LineNumber}}
-File: {{ .File }}
-Offender: {{ .Offender }}
-
-{{ end -}}{{- end}}`
-```
-
-## func [RenderTemplate](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/template.go#L24>)
-
-```go
-func RenderTemplate(w *os.File, tpl string, f scan.Report)
-```
-
-RenderTemplate renders a Hound finding in a custom go template format to the provided writer\.
-
-## type [Hound](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L17-L21>)
+## type [Hound](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L14-L18>)
 
 A Hound performs file inspection and collects the results\.
 
@@ -54,7 +30,7 @@ type Hound struct {
 }
 ```
 
-### func [NewHound](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L24>)
+### func [NewHound](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L21>)
 
 ```go
 func NewHound(f config.Format, t *string) *Hound
@@ -62,7 +38,7 @@ func NewHound(f config.Format, t *string) *Hound
 
 NewHound creates an instance of the Hound type from the given Config\.
 
-### func \(\*Hound\) [Howl](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L33>)
+### func \(\*Hound\) [Howl](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L30>)
 
 ```go
 func (h *Hound) Howl()
@@ -158,7 +134,7 @@ This is an example of how to run a scan on a single file to look for email addre
 	}
 	defer env.cleanup()
 
-	config := config.NewCfg(env.TestFileName, true, env.Gitleaks, config.JSONFormat, hunter.DefaultTemplate, 1)
+	config := config.NewCfg(env.TestFileName, true, env.Gitleaks, config.JSONFormat, helpers.DefaultTemplate, 1)
 	h := hunter.NewHunter(config)
 
 	if err = h.Hunt(); err != nil {
@@ -211,7 +187,7 @@ This method also accepts custom output format configuration using go template/ht
 	}
 	defer env.cleanup()
 
-	config := config.NewCfg(env.TestFileName, true, env.Gitleaks, config.CustomFormat, hunter.DefaultTemplate, 1)
+	config := config.NewCfg(env.TestFileName, true, env.Gitleaks, config.CustomFormat, helpers.DefaultTemplate, 1)
 	h := hunter.NewHunter(config)
 
 	if err = h.Hunt(); err != nil {

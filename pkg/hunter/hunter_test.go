@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/brittonhayes/pillager/pkg/config"
+	"github.com/brittonhayes/pillager/pkg/helpers"
 	"github.com/brittonhayes/pillager/pkg/hunter"
 	"github.com/brittonhayes/pillager/templates"
 	"github.com/samsarahq/go/oops"
@@ -18,7 +19,7 @@ func ExampleHunter_Hunt_simple() {
 	}
 	defer env.cleanup()
 
-	config := config.NewCfg(env.TestFileName, true, env.Gitleaks, config.JSONFormat, hunter.DefaultTemplate, 1)
+	config := config.NewCfg(env.TestFileName, true, env.Gitleaks, config.JSONFormat, helpers.DefaultTemplate, 1)
 	h := hunter.NewHunter(config)
 
 	if err = h.Hunt(); err != nil {
@@ -61,7 +62,7 @@ func ExampleHunter_Hunt_template() {
 	}
 	defer env.cleanup()
 
-	config := config.NewCfg(env.TestFileName, true, env.Gitleaks, config.CustomFormat, hunter.DefaultTemplate, 1)
+	config := config.NewCfg(env.TestFileName, true, env.Gitleaks, config.CustomFormat, helpers.DefaultTemplate, 1)
 	h := hunter.NewHunter(config)
 
 	if err = h.Hunt(); err != nil {

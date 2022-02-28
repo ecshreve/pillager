@@ -4,7 +4,6 @@ go 1.17
 
 require (
 	github.com/BurntSushi/toml v0.4.1
-	github.com/ghodss/yaml v1.0.0
 	github.com/gookit/color v1.5.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/samsarahq/go/oops v0.0.0-20220211150445-4b291d6feac4
@@ -12,6 +11,7 @@ require (
 	github.com/spf13/viper v1.9.0
 	github.com/stretchr/testify v1.7.0
 	github.com/zricethezav/gitleaks/v7 v7.6.1
+	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (
@@ -50,6 +50,5 @@ require (
 	golang.org/x/text v0.3.6 // indirect
 	gopkg.in/ini.v1 v1.63.2 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
