@@ -276,68 +276,73 @@ func (h *Hunter) Hunt() error
 
 Hunt walks over the filesystem at the configured path\, looking for sensitive information\.
 
-<details><summary>Example (Custom_output)</summary>
+<details><summary>Example (Simple)</summary>
 <p>
 
-This method also accepts custom output format configuration using go template/html\. So if you don't like yaml or json\, you can format to your heart's content\.
+This is an example of how to run a scan on a single file to look for email addresses\.
 
 ```go
-package main
-
-import (
-	"github.com/brittonhayes/pillager/pkg/hunter"
-	"github.com/samsarahq/go/oops"
-	gitleaks "github.com/zricethezav/gitleaks/v7/config"
-	"log"
-	"os"
-)
-
-type hunterTestEnv struct {
-	gitleaks        *gitleaks.Config
-	testFileName    string
-	testFileContent string
-}
-
-func (e *hunterTestEnv) cleanup() {
-	if err := os.Remove(e.testFileName); err != nil {
-		log.Println(oops.Wrapf(err, "removing temporary test files"))
-	}
-}
-
-// huntTestEnvHelper is a convenient helper to create temporary files
-// with for the tests and examples in this package.
-func huntTestEnvHelper(testFilePattern string, testFileContent string) (*hunterTestEnv, error) {
-	gl, err := hunter.ParseRulesFromConfigFile("./testdata/pillager_test_config.toml")
-	if err != nil {
-		return nil, oops.Wrapf(err, "parsing config data for test env")
-	}
-
-	f, err := os.CreateTemp("./testdata", testFilePattern)
-	if err != nil {
-		return nil, oops.Wrapf(err, "creating test file for test env")
-	}
-	defer f.Close()
-
-	_, err = f.WriteString(testFileContent)
-	if err != nil {
-		return nil, oops.Wrapf(err, "writing test file content for test env")
-	}
-
-	return &hunterTestEnv{
-		gitleaks:        gl,
-		testFileName:    f.Name(),
-		testFileContent: testFileContent,
-	}, nil
-}
-
-func main() {
-	env, err := huntTestEnvHelper("~.yaml", "https://github.com/brittonhayes/pillager")
+{
+	env, err := HuntTestEnvHelper("~.toml", "example@email.com")
 	if err != nil {
 		log.Fatalln(oops.Wrapf(err, "creating test env"))
 	}
 	defer env.cleanup()
 
-	config := hunter.NewConfig(env.testFileName, true, env.gitleaks, hunter.CustomFormat, hunter.DefaultTemplate, 1)
+	config := hunter.NewConfig(env.TestFileName, true, env.Gitleaks, hunter.JSONFormat, hunter.DefaultTemplate, 1)
+	h := hunter.NewHunter(config)
+
+	if err = h.Hunt(); err != nil {
+		log.Fatalln(oops.Wrapf(err, "failure to Hunt"))
+	}
+
+}
+```
+
+#### Output
+
+```
+{
+	"line": "example@email.com",
+	"lineNumber": 1,
+	"offender": "example@email.com",
+	"offenderEntropy": -1,
+	"commit": "",
+	"repo": "",
+	"repoURL": "",
+	"leakURL": "",
+	"rule": "Email",
+	"commitMessage": "",
+	"author": "",
+	"email": "",
+	"file": ".",
+	"date": "0001-01-01T00:00:00Z",
+	"tags": "email"
+}
+
+---
+Hooooowl -- 🐕
+---
+[{"line":"example@email.com","lineNumber":1,"offender":"example@email.com","offenderEntropy":-1,"commit":"","repo":"","repoURL":"","leakURL":"","rule":"Email","commitMessage":"","author":"","email":"","file":".","date":"0001-01-01T00:00:00Z","tags":"email"}]
+```
+
+</p>
+</details>
+
+<details><summary>Example (Template)</summary>
+<p>
+
+This method also accepts custom output format configuration using go template/html\. So if you don't like yaml or json\, you can format to your heart's content\.
+
+```go
+{
+	env, err := HuntTestEnvHelper("~.yaml", "https://github.com/brittonhayes/pillager")
+	if err != nil {
+		log.Fatalln(oops.Wrapf(err, "creating test env"))
+	}
+	defer env.cleanup()
+
+	config := hunter.NewConfig(env.TestFileName, true, env.Gitleaks, hunter.CustomFormat, hunter.DefaultTemplate, 1)
 	h := hunter.NewHunter(config)
 
 	if err = h.Hunt(); err != nil {
@@ -379,170 +384,20 @@ Offender: https://github.com/brittonhayes/pillager
 </p>
 </details>
 
-<details><summary>Example (Email)</summary>
-<p>
-
-This is an example of how to run a scan on a single file to look for email addresses\.
-
-```go
-package main
-
-import (
-	"github.com/brittonhayes/pillager/pkg/hunter"
-	"github.com/samsarahq/go/oops"
-	gitleaks "github.com/zricethezav/gitleaks/v7/config"
-	"log"
-	"os"
-)
-
-type hunterTestEnv struct {
-	gitleaks        *gitleaks.Config
-	testFileName    string
-	testFileContent string
-}
-
-func (e *hunterTestEnv) cleanup() {
-	if err := os.Remove(e.testFileName); err != nil {
-		log.Println(oops.Wrapf(err, "removing temporary test files"))
-	}
-}
-
-// huntTestEnvHelper is a convenient helper to create temporary files
-// with for the tests and examples in this package.
-func huntTestEnvHelper(testFilePattern string, testFileContent string) (*hunterTestEnv, error) {
-	gl, err := hunter.ParseRulesFromConfigFile("./testdata/pillager_test_config.toml")
-	if err != nil {
-		return nil, oops.Wrapf(err, "parsing config data for test env")
-	}
-
-	f, err := os.CreateTemp("./testdata", testFilePattern)
-	if err != nil {
-		return nil, oops.Wrapf(err, "creating test file for test env")
-	}
-	defer f.Close()
-
-	_, err = f.WriteString(testFileContent)
-	if err != nil {
-		return nil, oops.Wrapf(err, "writing test file content for test env")
-	}
-
-	return &hunterTestEnv{
-		gitleaks:        gl,
-		testFileName:    f.Name(),
-		testFileContent: testFileContent,
-	}, nil
-}
-
-func main() {
-	env, err := huntTestEnvHelper("~.toml", "example@email.com")
-	if err != nil {
-		log.Fatalln(oops.Wrapf(err, "creating test env"))
-	}
-	defer env.cleanup()
-
-	config := hunter.NewConfig(env.testFileName, true, env.gitleaks, hunter.JSONFormat, hunter.DefaultTemplate, 1)
-	h := hunter.NewHunter(config)
-
-	if err = h.Hunt(); err != nil {
-		log.Fatalln(oops.Wrapf(err, "failure to Hunt"))
-	}
-
-}
-```
-
-#### Output
-
-```
-{
-	"line": "example@email.com",
-	"lineNumber": 1,
-	"offender": "example@email.com",
-	"offenderEntropy": -1,
-	"commit": "",
-	"repo": "",
-	"repoURL": "",
-	"leakURL": "",
-	"rule": "Email",
-	"commitMessage": "",
-	"author": "",
-	"email": "",
-	"file": ".",
-	"date": "0001-01-01T00:00:00Z",
-	"tags": "email"
-}
-
----
-Hooooowl -- 🐕
----
-[{"line":"example@email.com","lineNumber":1,"offender":"example@email.com","offenderEntropy":-1,"commit":"","repo":"","repoURL":"","leakURL":"","rule":"Email","commitMessage":"","author":"","email":"","file":".","date":"0001-01-01T00:00:00Z","tags":"email"}]
-```
-
-</p>
-</details>
-
 <details><summary>Example (Toml)</summary>
 <p>
 
 Hunter will also look personally identifiable info in TOML files and format the output as HTML\.
 
 ```go
-package main
-
-import (
-	"github.com/brittonhayes/pillager/pkg/hunter"
-	"github.com/brittonhayes/pillager/templates"
-	"github.com/samsarahq/go/oops"
-	gitleaks "github.com/zricethezav/gitleaks/v7/config"
-	"log"
-	"os"
-)
-
-type hunterTestEnv struct {
-	gitleaks        *gitleaks.Config
-	testFileName    string
-	testFileContent string
-}
-
-func (e *hunterTestEnv) cleanup() {
-	if err := os.Remove(e.testFileName); err != nil {
-		log.Println(oops.Wrapf(err, "removing temporary test files"))
-	}
-}
-
-// huntTestEnvHelper is a convenient helper to create temporary files
-// with for the tests and examples in this package.
-func huntTestEnvHelper(testFilePattern string, testFileContent string) (*hunterTestEnv, error) {
-	gl, err := hunter.ParseRulesFromConfigFile("./testdata/pillager_test_config.toml")
-	if err != nil {
-		return nil, oops.Wrapf(err, "parsing config data for test env")
-	}
-
-	f, err := os.CreateTemp("./testdata", testFilePattern)
-	if err != nil {
-		return nil, oops.Wrapf(err, "creating test file for test env")
-	}
-	defer f.Close()
-
-	_, err = f.WriteString(testFileContent)
-	if err != nil {
-		return nil, oops.Wrapf(err, "writing test file content for test env")
-	}
-
-	return &hunterTestEnv{
-		gitleaks:        gl,
-		testFileName:    f.Name(),
-		testFileContent: testFileContent,
-	}, nil
-}
-
-func main() {
-	env, err := huntTestEnvHelper("~.toml", "fakeperson@example.com")
+{
+	env, err := HuntTestEnvHelper("~.toml", "fakeperson@example.com")
 	if err != nil {
 		log.Fatalln(oops.Wrapf(err, "creating test env"))
 	}
 	defer env.cleanup()
 
-	config := hunter.NewConfig(env.testFileName, true, env.gitleaks, hunter.HTMLFormat, templates.HTML, 1)
+	config := hunter.NewConfig(env.TestFileName, true, env.Gitleaks, hunter.HTMLFormat, templates.HTML, 1)
 	h := hunter.NewHunter(config)
 
 	if err = h.Hunt(); err != nil {
