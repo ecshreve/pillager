@@ -3,7 +3,7 @@
 # rules
 
 ```go
-import "github.com/brittonhayes/pillager/rules"
+import "github.com/brittonhayes/pillager/pkg/rules"
 ```
 
 ## Index
@@ -43,10 +43,16 @@ title = "pillager config"
 	description = "Slack Webhook"
 	regex = '''https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}'''
 	tags = ["key", "slack"]
+
+[allowlist]
+	description = "Allowlisted files"
+	files = ['''^\.?gitleaks.toml$''',
+	'''(.*?)(png|jpg|gif|doc|docx|pdf|bin|xls|pyc|zip)$''',
+	'''(go.mod|go.sum)$''']
 `
 ```
 
-## func [Load](<https://github.com/brittonhayes/pillager/blob/main/rules/rules.go#L11>)
+## func [Load](<https://github.com/brittonhayes/pillager/blob/main/pkg/rules/rules.go#L11>)
 
 ```go
 func Load(filepath string) gitleaks.Config

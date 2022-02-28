@@ -3,7 +3,7 @@
 # hunter
 
 ```go
-import "github.com/brittonhayes/pillager/hunter"
+import "github.com/brittonhayes/pillager/pkg/hunter"
 ```
 
 Package hunter contains the types\, methods\, and interfaces for the file hunting portion of pillager
@@ -36,15 +36,15 @@ DefaultTemplate is the base template used to format a Finding into the custom ou
 
 ```go
 const DefaultTemplate = `{{ with . -}}
-{{ range .Leaks -}}Line: {{.LineNumber}}
+{{ range .Leaks -}}
+Line: {{.LineNumber}}
 File: {{ .File }}
 Offender: {{ .Offender }}
 
-{{end}}
-{{- end}}`
+{{ end -}}{{- end}}`
 ```
 
-## func [RenderTemplate](<https://github.com/brittonhayes/pillager/blob/main/hunter/template.go#L23>)
+## func [RenderTemplate](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/template.go#L23>)
 
 ```go
 func RenderTemplate(w io.Writer, tpl string, f scan.Report)
@@ -52,7 +52,7 @@ func RenderTemplate(w io.Writer, tpl string, f scan.Report)
 
 RenderTemplate renders a Hound finding in a custom go template format to the provided writer
 
-## type [Config](<https://github.com/brittonhayes/pillager/blob/main/hunter/config.go#L16-L24>)
+## type [Config](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/config.go#L16-L24>)
 
 Config takes all of the configurable parameters for a Hunter
 
@@ -68,7 +68,7 @@ type Config struct {
 }
 ```
 
-### func [NewConfig](<https://github.com/brittonhayes/pillager/blob/main/hunter/config.go#L32>)
+### func [NewConfig](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/config.go#L32>)
 
 ```go
 func NewConfig(fs afero.Fs, path string, verbose bool, gitleaks gitleaks.Config, format Format, template string, workers int) *Config
@@ -76,7 +76,7 @@ func NewConfig(fs afero.Fs, path string, verbose bool, gitleaks gitleaks.Config,
 
 NewConfig generates a new config for the Hunter
 
-### func \(\*Config\) [Default](<https://github.com/brittonhayes/pillager/blob/main/hunter/config.go#L47>)
+### func \(\*Config\) [Default](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/config.go#L47>)
 
 ```go
 func (c *Config) Default() *Config
@@ -84,13 +84,13 @@ func (c *Config) Default() *Config
 
 Default loads the default configuration for the Hunter
 
-### func \(\*Config\) [Validate](<https://github.com/brittonhayes/pillager/blob/main/hunter/config.go#L60>)
+### func \(\*Config\) [Validate](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/config.go#L59>)
 
 ```go
 func (c *Config) Validate() (err error)
 ```
 
-## type [Configer](<https://github.com/brittonhayes/pillager/blob/main/hunter/config.go#L26-L29>)
+## type [Configer](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/config.go#L26-L29>)
 
 ```go
 type Configer interface {
@@ -99,7 +99,7 @@ type Configer interface {
 }
 ```
 
-## type [Format](<https://github.com/brittonhayes/pillager/blob/main/hunter/format.go#L11>)
+## type [Format](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/format.go#L15>)
 
 ```go
 type Format int
@@ -109,11 +109,15 @@ type Format int
 const (
     JSONFormat Format = iota + 1
     YAMLFormat
+    TableFormat
+    HTMLFormat
+    HTMLTableFormat
+    MarkdownFormat
     CustomFormat
 )
 ```
 
-### func [StringToFormat](<https://github.com/brittonhayes/pillager/blob/main/hunter/format.go#L19>)
+### func [StringToFormat](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/format.go#L23>)
 
 ```go
 func StringToFormat(s string) Format
@@ -121,13 +125,13 @@ func StringToFormat(s string) Format
 
 StringToFormat takes in a string representation of the preferred output format and returns to enum equivalent
 
-### func \(Format\) [String](<https://github.com/brittonhayes/pillager/blob/main/hunter/format.go#L13>)
+### func \(Format\) [String](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/format.go#L17>)
 
 ```go
 func (f Format) String() string
 ```
 
-## type [Hound](<https://github.com/brittonhayes/pillager/blob/main/hunter/hound.go#L22-L25>)
+## type [Hound](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L23-L26>)
 
 A Hound performs the file inspection and returns the results
 
@@ -138,7 +142,7 @@ type Hound struct {
 }
 ```
 
-### func [NewHound](<https://github.com/brittonhayes/pillager/blob/main/hunter/hound.go#L28>)
+### func [NewHound](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L29>)
 
 ```go
 func NewHound(c *Config) *Hound
@@ -146,7 +150,7 @@ func NewHound(c *Config) *Hound
 
 NewHound creates an instance of the Hound type
 
-### func \(\*Hound\) [Howl](<https://github.com/brittonhayes/pillager/blob/main/hunter/hound.go#L41>)
+### func \(\*Hound\) [Howl](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L42>)
 
 ```go
 func (h *Hound) Howl(findings scan.Report)
@@ -154,7 +158,7 @@ func (h *Hound) Howl(findings scan.Report)
 
 Howl prints out the Findings from the Hound in the preferred output format
 
-<details><summary>Example</summary>
+<details><summary>Example (Json)</summary>
 <p>
 
 Here is an example of utilizing the Howl function on a slice of findings\. The Howl method is the final method in the hunting process\. It takes whatever has been found and outputs it for the user\.
@@ -179,7 +183,7 @@ Here is an example of utilizing the Howl function on a slice of findings\. The H
 </p>
 </details>
 
-## type [Hounder](<https://github.com/brittonhayes/pillager/blob/main/hunter/hound.go#L17-L19>)
+## type [Hounder](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L18-L20>)
 
 The Hounder interface defines the available methods for instances of the Hound type
 
@@ -189,7 +193,7 @@ type Hounder interface {
 }
 ```
 
-## type [Hunter](<https://github.com/brittonhayes/pillager/blob/main/hunter/hunter.go#L14-L17>)
+## type [Hunter](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hunter.go#L14-L17>)
 
 Hunter holds the required fields to implement the Hunting interface and utilize the hunter package
 
@@ -200,7 +204,7 @@ type Hunter struct {
 }
 ```
 
-### func [NewHunter](<https://github.com/brittonhayes/pillager/blob/main/hunter/hunter.go#L27>)
+### func [NewHunter](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hunter.go#L27>)
 
 ```go
 func NewHunter(c *Config) *Hunter
@@ -208,7 +212,7 @@ func NewHunter(c *Config) *Hunter
 
 NewHunter creates an instance of the Hunter type
 
-### func \(Hunter\) [Hunt](<https://github.com/brittonhayes/pillager/blob/main/hunter/hunter.go#L43>)
+### func \(Hunter\) [Hunt](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hunter.go#L43>)
 
 ```go
 func (h Hunter) Hunt() error
@@ -216,7 +220,7 @@ func (h Hunter) Hunt() error
 
 Hunt walks over the filesystem at the configured path\, looking for sensitive information
 
-<details><summary>Example</summary>
+<details><summary>Example (Custom_output)</summary>
 <p>
 
 This method also accepts custom output formats using go template/html\. So if you don't like yaml or json\, you can format to your heart's content\.
@@ -244,7 +248,7 @@ This method also accepts custom output formats using go template/html\. So if yo
 </p>
 </details>
 
-<details><summary>Example</summary>
+<details><summary>Example (Email)</summary>
 <p>
 
 This is an example of how to run a scan on a single file to look for email addresses\. We're using an in\-memory file system for simplicity\, but this supports using an actual file system as well\.
@@ -272,7 +276,7 @@ This is an example of how to run a scan on a single file to look for email addre
 </p>
 </details>
 
-<details><summary>Example</summary>
+<details><summary>Example (Json)</summary>
 <p>
 
 This method accepts json output format as well
@@ -299,7 +303,7 @@ This method accepts json output format as well
 </p>
 </details>
 
-<details><summary>Example</summary>
+<details><summary>Example (Toml)</summary>
 <p>
 
 Hunter will also look personally identifiable info in TOML
@@ -327,7 +331,7 @@ Hunter will also look personally identifiable info in TOML
 </p>
 </details>
 
-## type [Hunting](<https://github.com/brittonhayes/pillager/blob/main/hunter/hunter.go#L22-L24>)
+## type [Hunting](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hunter.go#L22-L24>)
 
 Hunting is the primary API interface for the hunter package
 
