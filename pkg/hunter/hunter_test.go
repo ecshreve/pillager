@@ -16,8 +16,10 @@ type hunterTestEnv struct {
 	testFileContent string
 }
 
-func (e *hunterTestEnv) cleanup() error {
-	return os.Remove(e.testFileName)
+func (e *hunterTestEnv) cleanup() {
+	if err := os.Remove(e.testFileName); err != nil {
+		log.Println(oops.Wrapf(err, "removing temporary test files"))
+	}
 }
 
 // huntTestEnvHelper is a convenient helper to create temporary files
