@@ -14,29 +14,33 @@ import "github.com/brittonhayes/pillager/internal/validate"
 - [type Validator](<#type-validator>)
 
 
-## type [Validation](<https://github.com/brittonhayes/pillager/blob/main/internal/validate/path.go#L12>)
+## type [Validation](<https://github.com/brittonhayes/pillager/blob/main/internal/validate/path.go#L11>)
+
+Validation repreesents a Valid path\.
 
 ```go
 type Validation struct{}
 ```
 
-### func [New](<https://github.com/brittonhayes/pillager/blob/main/internal/validate/path.go#L15>)
+### func [New](<https://github.com/brittonhayes/pillager/blob/main/internal/validate/path.go#L22>)
 
 ```go
 func New() *Validation
 ```
 
-New creates a new validation
+New returns a new Validation\.
 
-### func \(\*Validation\) [Path](<https://github.com/brittonhayes/pillager/blob/main/internal/validate/path.go#L25>)
+### func \(\*Validation\) [Path](<https://github.com/brittonhayes/pillager/blob/main/internal/validate/path.go#L28>)
 
 ```go
 func (v *Validation) Path(fs afero.Fs, path string) string
 ```
 
-Path checks if a filepath exists and returns it if so\, otherwise returns a default path
+Path checks if a filepath exists and returns it if so\, otherwise it returns the default path\.
 
-## type [Validator](<https://github.com/brittonhayes/pillager/blob/main/internal/validate/path.go#L19-L21>)
+## type [Validator](<https://github.com/brittonhayes/pillager/blob/main/internal/validate/path.go#L17-L19>)
+
+The Validator interface defines available methods for instances of the Validation type\.
 
 ```go
 type Validator interface {

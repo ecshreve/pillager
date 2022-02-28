@@ -6,7 +6,7 @@
 import "github.com/brittonhayes/pillager/pkg/hunter"
 ```
 
-Package hunter contains the types\, methods\, and interfaces for the file hunting portion of pillager
+Package hunter contains the types\, methods\, and interfaces for the file hunting functionality of pillager\.
 
 ## Index
 
@@ -32,7 +32,7 @@ Package hunter contains the types\, methods\, and interfaces for the file huntin
 
 ## Constants
 
-DefaultTemplate is the base template used to format a Finding into the custom output format
+DefaultTemplate is the base template used to format a Finding into the custom output format\.
 
 ```go
 const DefaultTemplate = `{{ with . -}}
@@ -50,11 +50,11 @@ Offender: {{ .Offender }}
 func RenderTemplate(w io.Writer, tpl string, f scan.Report)
 ```
 
-RenderTemplate renders a Hound finding in a custom go template format to the provided writer
+RenderTemplate renders a Hound finding in a custom go template format to the provided writer\.
 
-## type [Config](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/config.go#L16-L24>)
+## type [Config](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/config.go#L13-L21>)
 
-Config takes all of the configurable parameters for a Hunter
+Config holds all the configurable parameters for a Hunter\.
 
 ```go
 type Config struct {
@@ -68,13 +68,13 @@ type Config struct {
 }
 ```
 
-### func [NewConfig](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/config.go#L32>)
+### func [NewConfig](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/config.go#L33>)
 
 ```go
 func NewConfig(fs afero.Fs, path string, verbose bool, gitleaks gitleaks.Config, format Format, template string, workers int) *Config
 ```
 
-NewConfig generates a new config for the Hunter
+NewConfig validates the given path and returns a new Config\.
 
 ### func \(\*Config\) [Default](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/config.go#L47>)
 
@@ -82,15 +82,19 @@ NewConfig generates a new config for the Hunter
 func (c *Config) Default() *Config
 ```
 
-Default loads the default configuration for the Hunter
+Default returns a Config with default values for the Hunter\.
 
-### func \(\*Config\) [Validate](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/config.go#L59>)
+### func \(\*Config\) [Validate](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/config.go#L61>)
 
 ```go
 func (c *Config) Validate() (err error)
 ```
 
-## type [Configer](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/config.go#L26-L29>)
+Validate returns an error if the given Config does not have the System or Rules fields populated\.
+
+## type [Configer](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/config.go#L27-L30>)
+
+The Configer interface defines the available methods for instances of the Config type\.
 
 ```go
 type Configer interface {
@@ -99,11 +103,15 @@ type Configer interface {
 }
 ```
 
-## type [Format](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/format.go#L15>)
+## type [Format](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/format.go#L6>)
+
+Format represents a possible output format for a Hound's findings\.
 
 ```go
 type Format int
 ```
+
+All possible output formats for a Hound\.
 
 ```go
 const (
@@ -117,23 +125,25 @@ const (
 )
 ```
 
-### func [StringToFormat](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/format.go#L23>)
+### func [StringToFormat](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/format.go#L26>)
 
 ```go
 func StringToFormat(s string) Format
 ```
 
-StringToFormat takes in a string representation of the preferred output format and returns to enum equivalent
+StringToFormat takes in a string representing the preferred output format\, and returns the associated Format enum value\.
 
-### func \(Format\) [String](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/format.go#L17>)
+### func \(Format\) [String](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/format.go#L20>)
 
 ```go
 func (f Format) String() string
 ```
 
-## type [Hound](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L23-L26>)
+String implements the stringer interface for the Format type\.
 
-A Hound performs the file inspection and returns the results
+## type [Hound](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L15-L18>)
+
+A Hound performs file inspection and collects the results\.
 
 ```go
 type Hound struct {
@@ -148,15 +158,15 @@ type Hound struct {
 func NewHound(c *Config) *Hound
 ```
 
-NewHound creates an instance of the Hound type
+NewHound creates an instance of the Hound type from the given Config\.
 
-### func \(\*Hound\) [Howl](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L42>)
+### func \(\*Hound\) [Howl](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L43>)
 
 ```go
 func (h *Hound) Howl(findings scan.Report)
 ```
 
-Howl prints out the Findings from the Hound in the preferred output format
+Howl prints out the findings from the Hound in the configured output format\.
 
 <details><summary>Example (Json)</summary>
 <p>
@@ -183,9 +193,9 @@ Here is an example of utilizing the Howl function on a slice of findings\. The H
 </p>
 </details>
 
-## type [Hounder](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L18-L20>)
+## type [Hounder](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L24-L26>)
 
-The Hounder interface defines the available methods for instances of the Hound type
+The Hounder interface defines the available methods for instances of the Hound type\.
 
 ```go
 type Hounder interface {
@@ -195,7 +205,7 @@ type Hounder interface {
 
 ## type [Hunter](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hunter.go#L14-L17>)
 
-Hunter holds the required fields to implement the Hunting interface and utilize the hunter package
+Hunter holds the required fields to implement the Hunting interface and utilize the hunter package\.
 
 ```go
 type Hunter struct {
@@ -210,15 +220,15 @@ type Hunter struct {
 func NewHunter(c *Config) *Hunter
 ```
 
-NewHunter creates an instance of the Hunter type
+NewHunter creates an instance of the Hunter type from the given Config\.
 
-### func \(Hunter\) [Hunt](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hunter.go#L43>)
+### func \(Hunter\) [Hunt](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hunter.go#L44>)
 
 ```go
 func (h Hunter) Hunt() error
 ```
 
-Hunt walks over the filesystem at the configured path\, looking for sensitive information
+Hunt walks over the filesystem at the configured path\, looking for sensitive information\.
 
 <details><summary>Example (Custom_output)</summary>
 <p>
@@ -333,7 +343,7 @@ Hunter will also look personally identifiable info in TOML
 
 ## type [Hunting](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hunter.go#L22-L24>)
 
-Hunting is the primary API interface for the hunter package
+Hunting is the primary API interface for the hunter package\.
 
 ```go
 type Hunting interface {

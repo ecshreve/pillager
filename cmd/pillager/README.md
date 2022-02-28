@@ -6,9 +6,9 @@
 import "github.com/brittonhayes/pillager/cmd/pillager"
 ```
 
-### Package pillager contains the command line logic
+Package pillager contains the command line logic\.
 
-The pillager package is the primary consumer of all packages in the /pkg directory
+The pillager package is the primary consumer of all packages in the /pkg directory\.
 
 ## Index
 

@@ -58,7 +58,7 @@ title = "pillager config"
 func Load(filepath string) gitleaks.Config
 ```
 
-Load loads the config file into an array of gitleaks rules
+Load loads the config file into an array of gitleaks rules\.
 
 
 
