@@ -6,6 +6,8 @@
 import "github.com/brittonhayes/pillager/pkg/helpers"
 ```
 
+Package helpers contains shared helper functions and constants\.
+
 ## Index
 
 - [Constants](<#constants>)
@@ -27,13 +29,15 @@ Offender: {{ .Offender }}
 {{ end -}}{{- end}}`
 ```
 
-## func [BuildOutputString](<https://github.com/brittonhayes/pillager/blob/main/pkg/helpers/template.go#L40>)
+## func [BuildOutputString](<https://github.com/brittonhayes/pillager/blob/main/pkg/helpers/helpers.go#L42>)
 
 ```go
 func BuildOutputString(f config.Format, tmp *string, rep scan.Report) string
 ```
 
-## func [RenderTemplate](<https://github.com/brittonhayes/pillager/blob/main/pkg/helpers/template.go#L29>)
+BuildOutputString returns the string result of applying the given template and format to the data in the report\.
+
+## func [RenderTemplate](<https://github.com/brittonhayes/pillager/blob/main/pkg/helpers/helpers.go#L29>)
 
 ```go
 func RenderTemplate(w io.Writer, tpl string, f scan.Report)
