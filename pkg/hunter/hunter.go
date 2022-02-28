@@ -1,9 +1,9 @@
 package hunter
 
 import (
-	"fmt"
-	"os"
+	"log"
 
+	"github.com/samsarahq/go/oops"
 	"github.com/zricethezav/gitleaks/v7/config"
 	"github.com/zricethezav/gitleaks/v7/options"
 	"github.com/zricethezav/gitleaks/v7/scan"
@@ -16,35 +16,25 @@ type Hunter struct {
 	Hound  *Hound
 }
 
-var _ Hunting = Hunter{}
-
-// Hunting is the primary API interface for the hunter package.
-type Hunting interface {
-	Hunt() error
-}
-
 // NewHunter creates an instance of the Hunter type from the given Config.
 func NewHunter(c *Config) *Hunter {
 	if c == nil {
-		var conf Config
-		return &Hunter{conf.Default(), NewHound(conf.Default())}
+		conf := DefaultConfig()
+		return &Hunter{conf, NewHound(conf.Format, &conf.Template)}
 	}
 
-	err := c.Validate()
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
+	if err := c.Validate(); err != nil {
+		log.Fatalln(oops.Wrapf(err, "invalid Config"))
 	}
 
-	return &Hunter{c, NewHound(c)}
+	return &Hunter{c, NewHound(c.Format, &c.Template)}
 }
 
 // Hunt walks over the filesystem at the configured path, looking for
 // sensitive information.
-func (h Hunter) Hunt() error {
-	h.Hound = NewHound(h.Config)
-	if _, err := os.Stat(h.Config.BasePath); os.IsNotExist(err) {
-		return fmt.Errorf("config file does not exist")
+func (h *Hunter) Hunt() error {
+	if h.Hound == nil {
+		h.Hound = NewHound(h.Config.Format, &h.Config.Template)
 	}
 
 	opt := options.Options{
@@ -58,13 +48,18 @@ func (h Hunter) Hunt() error {
 	}
 
 	scanner := scan.NewNoGitScanner(opt, conf)
-	report, err := scanner.Scan()
-	if err != nil {
-		return err
+	if scanner == nil {
+		return oops.Errorf("unable to create scanner")
 	}
 
-	if !opt.Verbose {
-		h.Hound.Howl(report)
+	report, err := scanner.Scan()
+	if err != nil {
+		return oops.Wrapf(err, "unable to scan")
+	}
+
+	h.Hound.Findings = &report
+	if opt.Verbose {
+		h.Hound.Howl()
 	}
 
 	return nil

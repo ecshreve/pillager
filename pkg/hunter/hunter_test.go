@@ -1,86 +1,150 @@
-package hunter
+package hunter_test
 
 import (
-	"github.com/brittonhayes/pillager/pkg/rules"
-	"github.com/spf13/afero"
+	"log"
+	"os"
+
+	"github.com/brittonhayes/pillager/pkg/hunter"
+	"github.com/brittonhayes/pillager/templates"
+	"github.com/samsarahq/go/oops"
+	gitleaks "github.com/zricethezav/gitleaks/v7/config"
 )
 
+type hunterTestEnv struct {
+	gitleaks        *gitleaks.Config
+	testFileName    string
+	testFileContent string
+}
+
+func (e *hunterTestEnv) cleanup() error {
+	return os.Remove(e.testFileName)
+}
+
+// huntTestEnvHelper is a convenient helper to create temporary files
+// with for the tests and examples in this package.
+func huntTestEnvHelper(testFilePattern string, testFileContent string) (*hunterTestEnv, error) {
+	gl, err := hunter.ParseRulesFromConfigFile("./testdata/pillager_test_config.toml")
+	if err != nil {
+		return nil, oops.Wrapf(err, "parsing config data for test env")
+	}
+	// Create test file to scan and write some data into it.
+	f, err := os.CreateTemp("./testdata", testFilePattern)
+	if err != nil {
+		return nil, oops.Wrapf(err, "creating test file for test env")
+	}
+	defer f.Close()
+
+	_, err = f.WriteString(testFileContent)
+	if err != nil {
+		return nil, oops.Wrapf(err, "writing test file content for test env")
+	}
+
+	return &hunterTestEnv{
+		gitleaks:        gl,
+		testFileName:    f.Name(),
+		testFileContent: testFileContent,
+	}, nil
+}
+
 // This is an example of how to run a scan on a single file to look for
-// email addresses. We're using an in-memory file system for simplicity,
-// but this supports using an actual file system as well.
+// email addresses.
 func ExampleHunter_Hunt_email() {
-	fs := afero.NewMemMapFs()
-	f, err := fs.Create("example.toml")
+	env, err := huntTestEnvHelper("~.toml", "example@email.com")
 	if err != nil {
-		panic(err)
+		log.Fatalln(oops.Wrapf(err, "creating test env"))
 	}
-	defer f.Close()
+	defer env.cleanup()
 
-	_, err = f.Write([]byte(`example@email.com`))
-	if err != nil {
-		panic(err)
+	config := hunter.NewConfig(env.testFileName, true, env.gitleaks, hunter.JSONFormat, hunter.DefaultTemplate, 1)
+	h := hunter.NewHunter(config)
+
+	if err = h.Hunt(); err != nil {
+		log.Fatalln(oops.Wrapf(err, "failure to Hunt"))
 	}
 
-	config := NewConfig(fs, "./", true, rules.Load(""), StringToFormat("yaml"), DefaultTemplate, 5)
-	h := NewHunter(config)
-	_ = h.Hunt()
+	// Output:
+	// {
+	// 	"line": "example@email.com",
+	// 	"lineNumber": 1,
+	// 	"offender": "example@email.com",
+	// 	"offenderEntropy": -1,
+	// 	"commit": "",
+	// 	"repo": "",
+	// 	"repoURL": "",
+	// 	"leakURL": "",
+	// 	"rule": "Email",
+	// 	"commitMessage": "",
+	// 	"author": "",
+	// 	"email": "",
+	// 	"file": ".",
+	// 	"date": "0001-01-01T00:00:00Z",
+	// 	"tags": "email"
+	// }
+	//
+	// ---
+	// Hooooowl -- 🐕
+	// ---
+	// [{"line":"example@email.com","lineNumber":1,"offender":"example@email.com","offenderEntropy":-1,"commit":"","repo":"","repoURL":"","leakURL":"","rule":"Email","commitMessage":"","author":"","email":"","file":".","date":"0001-01-01T00:00:00Z","tags":"email"}]
+	//
 }
 
-// This method also accepts custom output formats using
-// go template/html. So if you don't like yaml or json,
-// you can format to your heart's content.
+// This method also accepts custom output format configuration
+// using go template/html. So if you don't like yaml or json, you can
+// format to your heart's content.
 func ExampleHunter_Hunt_custom_output() {
-	fs := afero.NewMemMapFs()
-	f, err := fs.Create("example.yaml")
+	env, err := huntTestEnvHelper("~.yaml", "https://github.com/brittonhayes/pillager")
 	if err != nil {
-		panic(err)
+		log.Fatalln(oops.Wrapf(err, "creating test env"))
 	}
-	defer f.Close()
+	defer env.cleanup()
 
-	_, err = f.Write([]byte(`https://github.com/brittonhayes/pillager`))
-	if err != nil {
-		panic(err)
+	config := hunter.NewConfig(env.testFileName, true, env.gitleaks, hunter.CustomFormat, hunter.DefaultTemplate, 1)
+	h := hunter.NewHunter(config)
+
+	if err = h.Hunt(); err != nil {
+		log.Fatalln(oops.Wrapf(err, "failure to Hunt"))
 	}
 
-	config := NewConfig(fs, "./", true, rules.Load(""), CustomFormat, DefaultTemplate, 5)
-	h := NewHunter(config)
-	_ = h.Hunt()
+	// Output:
+	// {
+	// 	"line": "https://github.com/brittonhayes/pillager",
+	// 	"lineNumber": 1,
+	// 	"offender": "https://github.com/brittonhayes/pillager",
+	// 	"offenderEntropy": -1,
+	// 	"commit": "",
+	// 	"repo": "",
+	// 	"repoURL": "",
+	// 	"leakURL": "",
+	// 	"rule": "Github",
+	// 	"commitMessage": "",
+	// 	"author": "",
+	// 	"email": "",
+	// 	"file": ".",
+	// 	"date": "0001-01-01T00:00:00Z",
+	// 	"tags": "github"
+	// }
+	//
+	// ---
+	// Hooooowl -- 🐕
+	// ---
+	// Line: 1
+	// File: .
+	// Offender: https://github.com/brittonhayes/pillager
 }
 
-// This method accepts json output format
-// as well
-func ExampleHunter_Hunt_json() {
-	fs := afero.NewMemMapFs()
-	f, err := fs.Create("fake.json")
-	if err != nil {
-		panic(err)
-	}
-	defer f.Close()
-	_, err = f.Write([]byte(`git@github.com:brittonhayes/pillager.git`))
-	if err != nil {
-		panic(err)
-	}
-
-	config := NewConfig(fs, ".", true, rules.Load(""), JSONFormat, DefaultTemplate, 5)
-	h := NewHunter(config)
-	_ = h.Hunt()
-}
-
-// Hunter will also look personally identifiable info in TOML
+// Hunter will also look personally identifiable info in TOML files and
+// format the output as HTML.
 func ExampleHunter_Hunt_toml() {
-	fs := afero.NewMemMapFs()
-	f, err := fs.Create("fake.toml")
+	env, err := huntTestEnvHelper("~.toml", "fakeperson@example.com")
 	if err != nil {
-		panic(err)
+		log.Fatalln(oops.Wrapf(err, "creating test env"))
 	}
-	defer f.Close()
-	_, err = f.Write([]byte(`fakeperson@example.com`))
-	if err != nil {
-		panic(err)
+	defer env.cleanup()
+
+	config := hunter.NewConfig(env.testFileName, true, env.gitleaks, hunter.HTMLFormat, templates.HTML, 1)
+	h := hunter.NewHunter(config)
+
+	if err = h.Hunt(); err != nil {
+		log.Fatalln(oops.Wrapf(err, "failure to Hunt"))
 	}
-
-	config := NewConfig(fs, ".", true, rules.Load(""), JSONFormat, DefaultTemplate, 5)
-
-	h := NewHunter(config)
-	_ = h.Hunt()
 }

@@ -8,8 +8,7 @@ import (
 	"runtime"
 
 	"github.com/brittonhayes/pillager/pkg/hunter"
-	"github.com/brittonhayes/pillager/pkg/rules"
-	"github.com/spf13/afero"
+	"github.com/samsarahq/go/oops"
 	"github.com/spf13/cobra"
 )
 
@@ -61,28 +60,27 @@ func init() {
 	huntCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "toggle verbose output")
 	huntCmd.Flags().StringVarP(&rulesConfig, "rules", "r", "", "path to gitleaks rules.toml config")
 	huntCmd.Flags().StringVarP(&output, "format", "f", "json", "set output format (json, yaml)")
-	huntCmd.Flags().StringVarP(
-		&templ,
-		"template",
-		"t",
-		"",
-		"set go text/template string for output format",
-	)
+	huntCmd.Flags().StringVarP(&templ, "template", "t", "", "set go text/template string for output format")
 }
 
 // startHunt builds a Config from the from the given command and arguments,
 // then creates a Hunter from the Config and executes it's Hunt function.
 func startHunt() func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
+		gitleaks, err := hunter.ParseRulesFromConfigFile(rulesConfig)
+		if err != nil {
+			return oops.Wrapf(err, "unable to get gitleaks rules for config")
+		}
+
 		c := hunter.NewConfig(
-			afero.NewOsFs(),
 			args[0],
 			verbose,
-			rules.Load(rulesConfig),
+			gitleaks,
 			hunter.StringToFormat(output),
 			templ,
 			workers,
 		)
+
 		h := hunter.NewHunter(c)
 		return h.Hunt()
 	}

@@ -18,11 +18,11 @@ const (
 
 // String implements the stringer interface for the Format type.
 func (f Format) String() string {
-	return [...]string{"json", "yaml", "table", "html", "html-table", "markdown", "custom"}[f]
+	return [...]string{"", "json", "yaml", "table", "html", "html-table", "markdown", "custom"}[f]
 }
 
 // StringToFormat takes in a string representing the preferred output format,
-//  and returns the associated Format enum value.
+// and returns the associated Format enum value.
 func StringToFormat(s string) Format {
 	switch strings.ToLower(s) {
 	case "yaml":

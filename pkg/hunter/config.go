@@ -1,40 +1,27 @@
 package hunter
 
 import (
-	"fmt"
+	"os"
 
-	"github.com/brittonhayes/pillager/internal/validate"
-	"github.com/brittonhayes/pillager/pkg/rules"
-	"github.com/spf13/afero"
+	"github.com/BurntSushi/toml"
+	"github.com/samsarahq/go/oops"
 	gitleaks "github.com/zricethezav/gitleaks/v7/config"
 )
 
 // Config holds all the configurable parameters for a Hunter.
 type Config struct {
-	System   afero.Fs
 	BasePath string
 	Verbose  bool
 	Workers  int
-	Gitleaks gitleaks.Config
+	Gitleaks *gitleaks.Config
 	Format   Format
 	Template string
 }
 
-var _ Configer = &Config{}
-
-// The Configer interface defines the available methods for instances of the
-// Config type.
-type Configer interface {
-	Default() *Config
-	Validate() (err error)
-}
-
 // NewConfig validates the given path and returns a new Config.
-func NewConfig(fs afero.Fs, path string, verbose bool, gitleaks gitleaks.Config, format Format, template string, workers int) *Config {
-	p := validate.New().Path(fs, path)
+func NewConfig(path string, verbose bool, gitleaks *gitleaks.Config, format Format, template string, workers int) *Config {
 	return &Config{
-		System:   fs,
-		BasePath: p,
+		BasePath: path,
 		Verbose:  verbose,
 		Gitleaks: gitleaks,
 		Format:   format,
@@ -43,29 +30,56 @@ func NewConfig(fs afero.Fs, path string, verbose bool, gitleaks gitleaks.Config,
 	}
 }
 
-// Default returns a Config with default values for the Hunter.
-func (c *Config) Default() *Config {
-	fs := afero.NewOsFs()
-	v := validate.New()
+// DefaultConfig returns a Config with default values for the Hunter.
+func DefaultConfig() *Config {
+	gitleaks, err := ParseRulesFromConfigFile("")
+	if err != nil {
+		return nil
+	}
+
 	return &Config{
-		System:   fs,
-		BasePath: v.Path(fs, "."),
+		BasePath: "",
 		Verbose:  false,
-		Gitleaks: rules.Load(""),
+		Gitleaks: gitleaks,
 		Format:   JSONFormat,
 	}
 }
 
 // Validate returns an error if the given Config does not have the System
 // or Rules fields populated.
-func (c *Config) Validate() (err error) {
-	if c.System == nil {
-		err = fmt.Errorf("missing filesystem in Hunter Config")
+func (c *Config) Validate() error {
+	// If no file or directory exists at the given BasePath then set
+	// it to the default value
+	if _, err := os.Stat(c.BasePath); err != nil {
+		c.BasePath = ""
 	}
 
 	if c.Gitleaks.Rules == nil {
-		err = fmt.Errorf("no gitleaks config provided")
+		return oops.Errorf("no gitleaks rules provided")
 	}
 
-	return
+	return nil
+}
+
+// ParseRulesFromConfigFile loads the rules defined in the config file
+// into a list of gitleaks rules.
+func ParseRulesFromConfigFile(filepath string) (*gitleaks.Config, error) {
+	var loader gitleaks.TomlLoader
+
+	if filepath != "" {
+		if _, err := toml.DecodeFile(filepath, &loader); err != nil {
+			return nil, oops.Wrapf(err, "failed to load config TOML data from file")
+		}
+	} else {
+		if _, err := toml.Decode(DefaultPillagerConfig, &loader); err != nil {
+			return nil, oops.Wrapf(err, "failed to load default config TOML data")
+		}
+	}
+
+	config, err := loader.Parse()
+	if err != nil {
+		return nil, oops.Wrapf(err, "failed to parse toml data to gitleaks config")
+	}
+
+	return &config, nil
 }

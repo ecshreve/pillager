@@ -1,11 +1,11 @@
 package pillager
 
 import (
-	"fmt"
-	"os"
+	"log"
 
 	"github.com/gookit/color"
 	"github.com/mitchellh/go-homedir"
+	"github.com/samsarahq/go/oops"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -35,8 +35,7 @@ var rootCmd = &cobra.Command{
 // This is called by pillager.pillager(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		log.Fatalln(oops.Wrapf(err, "encountered problem executing root command"))
 	}
 }
 
@@ -48,17 +47,14 @@ func init() {
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
 	if cfgFile != "" {
-		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
-		// Find home directory.
 		home, err := homedir.Dir()
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			log.Fatalln(oops.Wrapf(err, "encountered problem finding home directory"))
 		}
 
-		// Search config in home directory with name ".pillager" (without extension).
+		// Search for config in home directory with name ".pillager" (without extension).
 		viper.AddConfigPath(home)
 		viper.SetConfigType("toml")
 		viper.SetConfigName(".pillager")
@@ -68,6 +64,6 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
+		log.Println("using config file:", viper.ConfigFileUsed())
 	}
 }

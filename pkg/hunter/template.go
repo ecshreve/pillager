@@ -2,9 +2,10 @@ package hunter
 
 import (
 	"html/template"
-	"io"
 	"log"
+	"os"
 
+	"github.com/samsarahq/go/oops"
 	"github.com/zricethezav/gitleaks/v7/scan"
 )
 
@@ -20,14 +21,13 @@ Offender: {{ .Offender }}
 
 // RenderTemplate renders a Hound finding in a custom go template format to
 // the provided writer.
-func RenderTemplate(w io.Writer, tpl string, f scan.Report) {
-	t := template.New("custom")
-	t, err := t.Parse(tpl)
+func RenderTemplate(w *os.File, tpl string, f scan.Report) {
+	t, err := template.New("custom").Parse(tpl)
 	if err != nil {
-		log.Fatal("failed to parse template, ", err.Error())
+		log.Fatalln(oops.Wrapf(err, "failed to parse template"))
 	}
 
 	if err := t.Execute(w, f); err != nil {
-		log.Fatal("Failed to use custom template, ", err.Error())
+		log.Fatalln(oops.Wrapf(err, "failed to use custom template"))
 	}
 }

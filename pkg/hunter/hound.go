@@ -8,54 +8,42 @@ import (
 
 	"github.com/brittonhayes/pillager/templates"
 	"github.com/ghodss/yaml"
+	"github.com/samsarahq/go/oops"
 	"github.com/zricethezav/gitleaks/v7/scan"
 )
 
 // A Hound performs file inspection and collects the results.
 type Hound struct {
-	Config   *Config
-	Findings scan.Report `json:"findings"`
-}
-
-var _ Hounder = &Hound{}
-
-// The Hounder interface defines the available methods for instances of the
-// Hound type.
-type Hounder interface {
-	Howl(findings scan.Report)
+	OutputFormat   Format
+	CustomTemplate *string
+	Findings       *scan.Report `json:"findings"`
 }
 
 // NewHound creates an instance of the Hound type from the given Config.
-func NewHound(c *Config) *Hound {
-	if c == nil {
-		var conf Config
-		return &Hound{conf.Default(), scan.Report{}}
+func NewHound(f Format, t *string) *Hound {
+	if f == CustomFormat && t == nil {
+		log.Fatalln(oops.Errorf("invalid parameters for creating Hound"))
 	}
 
-	if c.System == nil {
-		log.Fatal("Missing filesystem in Hunter Config")
-	}
-
-	return &Hound{c, scan.Report{}}
+	return &Hound{f, t, &scan.Report{}}
 }
 
 // Howl prints out the findings from the Hound in the configured output format.
-func (h *Hound) Howl(findings scan.Report) {
-	if h.Config.Template != "" {
-		h.Config.Format = CustomFormat
-	}
-	switch h.Config.Format {
+func (h *Hound) Howl() {
+	fmt.Println("\n---\nHooooowl -- 🐕\n---")
+	findings := *h.Findings
+
+	switch h.OutputFormat {
 	case JSONFormat:
 		b, err := json.Marshal(&findings.Leaks)
 		if err != nil {
-			log.Fatal("Failed to unmarshal findings")
+			log.Fatal(oops.Wrapf(err, "unmarshal findings from json"))
 		}
 		fmt.Println(string(b))
 	case YAMLFormat:
 		b, err := yaml.Marshal(&findings.Leaks)
 		if err != nil {
-			fmt.Printf("err: %v\n", err)
-			return
+			log.Fatal(oops.Wrapf(err, "unmarshal findings from yaml"))
 		}
 		fmt.Println(string(b))
 	case HTMLFormat:
@@ -67,7 +55,10 @@ func (h *Hound) Howl(findings scan.Report) {
 	case TableFormat:
 		RenderTemplate(os.Stdout, templates.Table, findings)
 	case CustomFormat:
-		RenderTemplate(os.Stdout, h.Config.Template, findings)
+		if h.CustomTemplate == nil {
+			log.Fatalln(oops.Errorf("unable to execute Howl for CustomFormat with nil CustomTemplate"))
+		}
+		RenderTemplate(os.Stdout, *h.CustomTemplate, findings)
 	default:
 		RenderTemplate(os.Stdout, templates.Simple, findings)
 	}
