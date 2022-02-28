@@ -11,26 +11,27 @@ import (
 	"github.com/zricethezav/gitleaks/v7/scan"
 )
 
-var _ Hounder = &Hound{}
-
-// The Hounder interface defines the available methods
-// for instances of the Hound type
-type Hounder interface {
-	Howl(findings scan.Report)
-}
-
-// A Hound performs the file inspection and returns the results
+// A Hound performs file inspection and collects the results.
 type Hound struct {
 	Config   *Config
 	Findings scan.Report `json:"findings"`
 }
 
-// NewHound creates an instance of the Hound type
+var _ Hounder = &Hound{}
+
+// The Hounder interface defines the available methods for instances of the
+// Hound type.
+type Hounder interface {
+	Howl(findings scan.Report)
+}
+
+// NewHound creates an instance of the Hound type from the given Config.
 func NewHound(c *Config) *Hound {
 	if c == nil {
-		var config Config
-		return &Hound{config.Default(), scan.Report{}}
+		var conf Config
+		return &Hound{conf.Default(), scan.Report{}}
 	}
+
 	if c.System == nil {
 		log.Fatal("Missing filesystem in Hunter Config")
 	}
@@ -38,7 +39,7 @@ func NewHound(c *Config) *Hound {
 	return &Hound{c, scan.Report{}}
 }
 
-// Howl prints out the Findings from the Hound in the preferred output format
+// Howl prints out the findings from the Hound in the configured output format.
 func (h *Hound) Howl(findings scan.Report) {
 	if h.Config.Template != "" {
 		h.Config.Format = CustomFormat

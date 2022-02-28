@@ -4,6 +4,8 @@ import (
 	_ "embed"
 )
 
+// These variables contain the embedded string value of
+// the template for the associated output format.
 var (
 	//go:embed simple.tmpl
 	Simple string

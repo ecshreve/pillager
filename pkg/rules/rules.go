@@ -7,7 +7,7 @@ import (
 	gitleaks "github.com/zricethezav/gitleaks/v7/config"
 )
 
-// Load loads the config file into an array of gitleaks rules
+// Load loads the config file into an array of gitleaks rules.
 func Load(filepath string) gitleaks.Config {
 	var (
 		config gitleaks.TomlLoader

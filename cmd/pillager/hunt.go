@@ -1,6 +1,7 @@
-// Package pillager contains the command line logic
+// Package pillager contains the command line logic.
 //
-// The pillager package is the primary consumer of all packages in the /pkg directory
+// The pillager package is the primary consumer of all packages in
+// the /pkg directory.
 package pillager
 
 import (
@@ -20,7 +21,7 @@ var (
 	workers     int
 )
 
-// huntCmd represents the hunt command
+// huntCmd represents the hunt command.
 var huntCmd = &cobra.Command{
 	Use:   "hunt [directory]",
 	Short: "Hunt for loot",
@@ -69,6 +70,8 @@ func init() {
 	)
 }
 
+// startHunt builds a Config from the from the given command and arguments,
+// then creates a Hunter from the Config and executes it's Hunt function.
 func startHunt() func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		c := hunter.NewConfig(

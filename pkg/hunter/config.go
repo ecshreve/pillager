@@ -9,10 +9,7 @@ import (
 	gitleaks "github.com/zricethezav/gitleaks/v7/config"
 )
 
-var _ Configer = &Config{}
-
-// Config takes all of the configurable
-// parameters for a Hunter
+// Config holds all the configurable parameters for a Hunter.
 type Config struct {
 	System   afero.Fs
 	BasePath string
@@ -23,12 +20,16 @@ type Config struct {
 	Template string
 }
 
+var _ Configer = &Config{}
+
+// The Configer interface defines the available methods for instances of the
+// Config type.
 type Configer interface {
 	Default() *Config
 	Validate() (err error)
 }
 
-// NewConfig generates a new config for the Hunter
+// NewConfig validates the given path and returns a new Config.
 func NewConfig(fs afero.Fs, path string, verbose bool, gitleaks gitleaks.Config, format Format, template string, workers int) *Config {
 	p := validate.New().Path(fs, path)
 	return &Config{
@@ -42,8 +43,7 @@ func NewConfig(fs afero.Fs, path string, verbose bool, gitleaks gitleaks.Config,
 	}
 }
 
-// Default loads the default configuration
-// for the Hunter
+// Default returns a Config with default values for the Hunter.
 func (c *Config) Default() *Config {
 	fs := afero.NewOsFs()
 	v := validate.New()
@@ -56,6 +56,8 @@ func (c *Config) Default() *Config {
 	}
 }
 
+// Validate returns an error if the given Config does not have the System
+// or Rules fields populated.
 func (c *Config) Validate() (err error) {
 	if c.System == nil {
 		err = fmt.Errorf("missing filesystem in Hunter Config")
@@ -64,5 +66,6 @@ func (c *Config) Validate() (err error) {
 	if c.Gitleaks.Rules == nil {
 		err = fmt.Errorf("no gitleaks config provided")
 	}
+
 	return
 }

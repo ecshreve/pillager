@@ -12,6 +12,7 @@ func init() {
 
 var version = "x.x.x"
 
+// versionCmd represents the hunt command.
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the version of Pillager",

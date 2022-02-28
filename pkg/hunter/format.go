@@ -2,6 +2,10 @@ package hunter
 
 import "strings"
 
+// Format represents a possible output format for a Hound's findings.
+type Format int
+
+// All possible output formats for a Hound.
 const (
 	JSONFormat Format = iota + 1
 	YAMLFormat
@@ -12,14 +16,13 @@ const (
 	CustomFormat
 )
 
-type Format int
-
+// String implements the stringer interface for the Format type.
 func (f Format) String() string {
 	return [...]string{"json", "yaml", "table", "html", "html-table", "markdown", "custom"}[f]
 }
 
-// StringToFormat takes in a string representation of the preferred
-// output format and returns to enum equivalent
+// StringToFormat takes in a string representing the preferred output format,
+//  and returns the associated Format enum value.
 func StringToFormat(s string) Format {
 	switch strings.ToLower(s) {
 	case "yaml":

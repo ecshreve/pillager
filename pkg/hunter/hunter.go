@@ -9,8 +9,8 @@ import (
 	"github.com/zricethezav/gitleaks/v7/scan"
 )
 
-// Hunter holds the required fields to implement
-// the Hunting interface and utilize the hunter package
+// Hunter holds the required fields to implement the Hunting interface
+// and utilize the hunter package.
 type Hunter struct {
 	Config *Config
 	Hound  *Hound
@@ -18,12 +18,12 @@ type Hunter struct {
 
 var _ Hunting = Hunter{}
 
-// Hunting is the primary API interface for the hunter package
+// Hunting is the primary API interface for the hunter package.
 type Hunting interface {
 	Hunt() error
 }
 
-// NewHunter creates an instance of the Hunter type
+// NewHunter creates an instance of the Hunter type from the given Config.
 func NewHunter(c *Config) *Hunter {
 	if c == nil {
 		var conf Config
@@ -39,15 +39,23 @@ func NewHunter(c *Config) *Hunter {
 	return &Hunter{c, NewHound(c)}
 }
 
-// Hunt walks over the filesystem at the configured path, looking for sensitive information
+// Hunt walks over the filesystem at the configured path, looking for
+// sensitive information.
 func (h Hunter) Hunt() error {
 	h.Hound = NewHound(h.Config)
 	if _, err := os.Stat(h.Config.BasePath); os.IsNotExist(err) {
 		return fmt.Errorf("config file does not exist")
 	}
 
-	opt := options.Options{Path: h.Config.BasePath, Verbose: h.Config.Verbose, Threads: h.Config.Workers}
-	conf := config.Config{Allowlist: h.Config.Gitleaks.Allowlist, Rules: h.Config.Gitleaks.Rules}
+	opt := options.Options{
+		Path:    h.Config.BasePath,
+		Verbose: h.Config.Verbose,
+		Threads: h.Config.Workers,
+	}
+	conf := config.Config{
+		Allowlist: h.Config.Gitleaks.Allowlist,
+		Rules:     h.Config.Gitleaks.Rules,
+	}
 
 	scanner := scan.NewNoGitScanner(opt, conf)
 	report, err := scanner.Scan()

@@ -12,7 +12,7 @@ import (
 
 var cfgFile string
 
-// rootCmd represents the base command when called without any subcommands
+// rootCmd represents the base command when called without any subcommands.
 var rootCmd = &cobra.Command{
 	Use:   "pillager",
 	Short: "Pillage systems for sensitive information",
@@ -64,7 +64,7 @@ func initConfig() {
 		viper.SetConfigName(".pillager")
 	}
 
-	viper.AutomaticEnv() // read in environment variables that match
+	viper.AutomaticEnv() // Read in environment variables that match.
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {

@@ -7,21 +7,24 @@ import (
 	"github.com/spf13/afero"
 )
 
-var _ Validator = &Validation{}
-
+// Validation repreesents a Valid path.
 type Validation struct{}
 
-// New creates a new validation
-func New() *Validation {
-	return &Validation{}
-}
+var _ Validator = &Validation{}
 
+// The Validator interface defines available methods for instances of the
+// Validation type.
 type Validator interface {
 	Path(fs afero.Fs, path string) string
 }
 
-// Path checks if a filepath exists and
-// returns it if so, otherwise returns a default path
+// New returns a new Validation.
+func New() *Validation {
+	return &Validation{}
+}
+
+// Path checks if a filepath exists and returns it if so, otherwise it
+// returns the default path.
 func (v *Validation) Path(fs afero.Fs, path string) string {
 	ok, err := afero.Exists(fs, path)
 	if err != nil {
