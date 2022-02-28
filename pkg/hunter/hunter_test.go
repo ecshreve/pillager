@@ -3,6 +3,7 @@ package hunter_test
 import (
 	"log"
 
+	"github.com/brittonhayes/pillager/pkg/config"
 	"github.com/brittonhayes/pillager/pkg/hunter"
 	"github.com/brittonhayes/pillager/templates"
 	"github.com/samsarahq/go/oops"
@@ -17,7 +18,7 @@ func ExampleHunter_Hunt_simple() {
 	}
 	defer env.cleanup()
 
-	config := hunter.NewConfig(env.TestFileName, true, env.Gitleaks, hunter.JSONFormat, hunter.DefaultTemplate, 1)
+	config := config.NewCfg(env.TestFileName, true, env.Gitleaks, config.JSONFormat, hunter.DefaultTemplate, 1)
 	h := hunter.NewHunter(config)
 
 	if err = h.Hunt(); err != nil {
@@ -60,7 +61,7 @@ func ExampleHunter_Hunt_template() {
 	}
 	defer env.cleanup()
 
-	config := hunter.NewConfig(env.TestFileName, true, env.Gitleaks, hunter.CustomFormat, hunter.DefaultTemplate, 1)
+	config := config.NewCfg(env.TestFileName, true, env.Gitleaks, config.CustomFormat, hunter.DefaultTemplate, 1)
 	h := hunter.NewHunter(config)
 
 	if err = h.Hunt(); err != nil {
@@ -103,7 +104,7 @@ func ExampleHunter_Hunt_toml() {
 	}
 	defer env.cleanup()
 
-	config := hunter.NewConfig(env.TestFileName, true, env.Gitleaks, hunter.HTMLFormat, templates.HTML, 1)
+	config := config.NewCfg(env.TestFileName, true, env.Gitleaks, config.HTMLFormat, templates.HTML, 1)
 	h := hunter.NewHunter(config)
 
 	if err = h.Hunt(); err != nil {

@@ -3,8 +3,9 @@ package hunter
 import (
 	"log"
 
+	"github.com/brittonhayes/pillager/pkg/config"
 	"github.com/samsarahq/go/oops"
-	"github.com/zricethezav/gitleaks/v7/config"
+	gitleaks "github.com/zricethezav/gitleaks/v7/config"
 	"github.com/zricethezav/gitleaks/v7/options"
 	"github.com/zricethezav/gitleaks/v7/scan"
 )
@@ -12,14 +13,14 @@ import (
 // Hunter holds the required fields to implement the Hunting interface
 // and utilize the hunter package.
 type Hunter struct {
-	Config *Config
+	Config *config.Cfg
 	Hound  *Hound
 }
 
 // NewHunter creates an instance of the Hunter type from the given Config.
-func NewHunter(c *Config) *Hunter {
+func NewHunter(c *config.Cfg) *Hunter {
 	if c == nil {
-		conf := DefaultConfig()
+		conf := config.DefaultCfg()
 		return &Hunter{conf, NewHound(conf.Format, &conf.Template)}
 	}
 
@@ -42,7 +43,7 @@ func (h *Hunter) Hunt() error {
 		Verbose: h.Config.Verbose,
 		Threads: h.Config.Workers,
 	}
-	conf := config.Config{
+	conf := gitleaks.Config{
 		Allowlist: h.Config.Gitleaks.Allowlist,
 		Rules:     h.Config.Gitleaks.Rules,
 	}

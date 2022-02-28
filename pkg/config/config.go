@@ -1,6 +1,7 @@
-package hunter
+package config
 
 import (
+	"log"
 	"os"
 
 	"github.com/BurntSushi/toml"
@@ -8,8 +9,8 @@ import (
 	gitleaks "github.com/zricethezav/gitleaks/v7/config"
 )
 
-// Config holds all the configurable parameters for a Hunter.
-type Config struct {
+// Cfg holds all the configurable parameters for a Hunter.
+type Cfg struct {
 	BasePath string
 	Verbose  bool
 	Workers  int
@@ -18,9 +19,9 @@ type Config struct {
 	Template string
 }
 
-// NewConfig validates the given path and returns a new Config.
-func NewConfig(path string, verbose bool, gitleaks *gitleaks.Config, format Format, template string, workers int) *Config {
-	return &Config{
+// NewCfg validates the given path and returns a new Config.
+func NewCfg(path string, verbose bool, gitleaks *gitleaks.Config, format Format, template string, workers int) *Cfg {
+	return &Cfg{
 		BasePath: path,
 		Verbose:  verbose,
 		Gitleaks: gitleaks,
@@ -30,14 +31,14 @@ func NewConfig(path string, verbose bool, gitleaks *gitleaks.Config, format Form
 	}
 }
 
-// DefaultConfig returns a Config with default values for the Hunter.
-func DefaultConfig() *Config {
-	gitleaks, err := ParseRulesFromConfigFile("")
+// DefaultCfg returns a Cfg with default values for the Hunter.
+func DefaultCfg() *Cfg {
+	gitleaks, err := ParsePillagerConfigFile("")
 	if err != nil {
-		return nil
+		log.Fatalln(oops.Wrapf(err, "parsing default pillager config file"))
 	}
 
-	return &Config{
+	return &Cfg{
 		BasePath: "",
 		Verbose:  false,
 		Gitleaks: gitleaks,
@@ -47,7 +48,7 @@ func DefaultConfig() *Config {
 
 // Validate returns an error if the given Config does not have the System
 // or Rules fields populated.
-func (c *Config) Validate() error {
+func (c *Cfg) Validate() error {
 	// If no file or directory exists at the given BasePath then set
 	// it to the default value
 	if _, err := os.Stat(c.BasePath); err != nil {
@@ -61,9 +62,9 @@ func (c *Config) Validate() error {
 	return nil
 }
 
-// ParseRulesFromConfigFile loads the rules defined in the config file
+// ParsePillagerConfigFile loads the rules defined in the config file
 // into a list of gitleaks rules.
-func ParseRulesFromConfigFile(filepath string) (*gitleaks.Config, error) {
+func ParsePillagerConfigFile(filepath string) (*gitleaks.Config, error) {
 	var loader gitleaks.TomlLoader
 
 	if filepath != "" {

@@ -1,4 +1,4 @@
-package hunter
+package config
 
 import "strings"
 

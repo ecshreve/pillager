@@ -1,4 +1,4 @@
-package hunter
+package config
 
 // DefaultPillagerConfig is the default ruleset for pillager's hunting parameters.
 // This can be overridden by providing a rules.toml file as an argument.

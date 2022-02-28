@@ -11,62 +11,16 @@ Package hunter contains the types\, methods\, and interfaces for the file huntin
 ## Index
 
 - [Constants](<#constants>)
-- [func ParseRulesFromConfigFile(filepath string) (*gitleaks.Config, error)](<#func-parserulesfromconfigfile>)
 - [func RenderTemplate(w *os.File, tpl string, f scan.Report)](<#func-rendertemplate>)
-- [type Config](<#type-config>)
-  - [func DefaultConfig() *Config](<#func-defaultconfig>)
-  - [func NewConfig(path string, verbose bool, gitleaks *gitleaks.Config, format Format, template string, workers int) *Config](<#func-newconfig>)
-  - [func (c *Config) Validate() error](<#func-config-validate>)
-- [type Format](<#type-format>)
-  - [func StringToFormat(s string) Format](<#func-stringtoformat>)
-  - [func (f Format) String() string](<#func-format-string>)
 - [type Hound](<#type-hound>)
-  - [func NewHound(f Format, t *string) *Hound](<#func-newhound>)
+  - [func NewHound(f config.Format, t *string) *Hound](<#func-newhound>)
   - [func (h *Hound) Howl()](<#func-hound-howl>)
 - [type Hunter](<#type-hunter>)
-  - [func NewHunter(c *Config) *Hunter](<#func-newhunter>)
+  - [func NewHunter(c *config.Cfg) *Hunter](<#func-newhunter>)
   - [func (h *Hunter) Hunt() error](<#func-hunter-hunt>)
 
 
 ## Constants
-
-DefaultPillagerConfig is the default ruleset for pillager's hunting parameters\. This can be overridden by providing a rules\.toml file as an argument\.
-
-```go
-const DefaultPillagerConfig = `
-title = "pillager config"
-[[rules]]
-	description = "AWS Access Key"
-	regex = '''(A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}'''
-	tags = ["key", "AWS"]
-[[rules]]
-	description = "AWS Secret Key"
-	regex = '''(?i)aws(.{0,20})?(?-i)['\"][0-9a-zA-Z\/+]{40}['\"]'''
-	tags = ["key", "AWS"]
-[[rules]]
-	description = "Github"
-	regex = '''(?i)github(.{0,20})?(?-i)[0-9a-zA-Z]{35,40}'''
-	tags = ["key", "Github"]
-[[rules]]
-	description = "Slack"
-	regex = '''xox[baprs]-([0-9a-zA-Z]{10,48})?'''
-	tags = ["key", "Slack"]
-[[rules]]
-	description = "Asymmetric Private Key"
-	regex = '''-----BEGIN ((EC|PGP|DSA|RSA|OPENSSH) )?PRIVATE KEY( BLOCK)?-----'''
-	tags = ["key", "AsymmetricPrivateKey"]
-[[rules]]
-	description = "Slack Webhook"
-	regex = '''https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}'''
-	tags = ["key", "slack"]
-
-[allowlist]
-	description = "Allowlisted files"
-	files = ['''^\.?gitleaks.toml$''',
-	'''(.*?)(png|jpg|gif|doc|docx|pdf|bin|xls|pyc|zip)$''',
-	'''(go.mod|go.sum)$''']
-`
-```
 
 DefaultTemplate is the base template used to format a Finding into the custom output format\.
 
@@ -80,14 +34,6 @@ Offender: {{ .Offender }}
 {{ end -}}{{- end}}`
 ```
 
-## func [ParseRulesFromConfigFile](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/config.go#L66>)
-
-```go
-func ParseRulesFromConfigFile(filepath string) (*gitleaks.Config, error)
-```
-
-ParseRulesFromConfigFile loads the rules defined in the config file into a list of gitleaks rules\.
-
 ## func [RenderTemplate](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/template.go#L24>)
 
 ```go
@@ -96,104 +42,27 @@ func RenderTemplate(w *os.File, tpl string, f scan.Report)
 
 RenderTemplate renders a Hound finding in a custom go template format to the provided writer\.
 
-## type [Config](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/config.go#L12-L19>)
-
-Config holds all the configurable parameters for a Hunter\.
-
-```go
-type Config struct {
-    BasePath string
-    Verbose  bool
-    Workers  int
-    Gitleaks *gitleaks.Config
-    Format   Format
-    Template string
-}
-```
-
-### func [DefaultConfig](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/config.go#L34>)
-
-```go
-func DefaultConfig() *Config
-```
-
-DefaultConfig returns a Config with default values for the Hunter\.
-
-### func [NewConfig](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/config.go#L22>)
-
-```go
-func NewConfig(path string, verbose bool, gitleaks *gitleaks.Config, format Format, template string, workers int) *Config
-```
-
-NewConfig validates the given path and returns a new Config\.
-
-### func \(\*Config\) [Validate](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/config.go#L50>)
-
-```go
-func (c *Config) Validate() error
-```
-
-Validate returns an error if the given Config does not have the System or Rules fields populated\.
-
-## type [Format](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/format.go#L6>)
-
-Format represents a possible output format for a Hound's findings\.
-
-```go
-type Format int
-```
-
-All possible output formats for a Hound\.
-
-```go
-const (
-    JSONFormat Format = iota + 1
-    YAMLFormat
-    TableFormat
-    HTMLFormat
-    HTMLTableFormat
-    MarkdownFormat
-    CustomFormat
-)
-```
-
-### func [StringToFormat](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/format.go#L26>)
-
-```go
-func StringToFormat(s string) Format
-```
-
-StringToFormat takes in a string representing the preferred output format\, and returns the associated Format enum value\.
-
-### func \(Format\) [String](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/format.go#L20>)
-
-```go
-func (f Format) String() string
-```
-
-String implements the stringer interface for the Format type\.
-
-## type [Hound](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L16-L20>)
+## type [Hound](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L17-L21>)
 
 A Hound performs file inspection and collects the results\.
 
 ```go
 type Hound struct {
-    OutputFormat   Format
+    OutputFormat   config.Format
     CustomTemplate *string
     Findings       *scan.Report `json:"findings"`
 }
 ```
 
-### func [NewHound](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L23>)
+### func [NewHound](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L24>)
 
 ```go
-func NewHound(f Format, t *string) *Hound
+func NewHound(f config.Format, t *string) *Hound
 ```
 
 NewHound creates an instance of the Hound type from the given Config\.
 
-### func \(\*Hound\) [Howl](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L32>)
+### func \(\*Hound\) [Howl](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L33>)
 
 ```go
 func (h *Hound) Howl()
@@ -208,7 +77,7 @@ Here is an example of utilizing the Howl function on a slice of findings\. The H
 
 ```go
 {
-	h := NewHound(CustomFormat, &templates.Table)
+	h := NewHound(config.CustomFormat, &templates.Table)
 
 	h.Findings = &scan.Report{
 		Leaks: []scan.Leak{
@@ -249,26 +118,26 @@ Hooooowl -- 🐕
 </p>
 </details>
 
-## type [Hunter](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hunter.go#L14-L17>)
+## type [Hunter](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hunter.go#L15-L18>)
 
 Hunter holds the required fields to implement the Hunting interface and utilize the hunter package\.
 
 ```go
 type Hunter struct {
-    Config *Config
+    Config *config.Cfg
     Hound  *Hound
 }
 ```
 
-### func [NewHunter](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hunter.go#L20>)
+### func [NewHunter](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hunter.go#L21>)
 
 ```go
-func NewHunter(c *Config) *Hunter
+func NewHunter(c *config.Cfg) *Hunter
 ```
 
 NewHunter creates an instance of the Hunter type from the given Config\.
 
-### func \(\*Hunter\) [Hunt](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hunter.go#L35>)
+### func \(\*Hunter\) [Hunt](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hunter.go#L36>)
 
 ```go
 func (h *Hunter) Hunt() error
@@ -289,7 +158,7 @@ This is an example of how to run a scan on a single file to look for email addre
 	}
 	defer env.cleanup()
 
-	config := hunter.NewConfig(env.TestFileName, true, env.Gitleaks, hunter.JSONFormat, hunter.DefaultTemplate, 1)
+	config := config.NewCfg(env.TestFileName, true, env.Gitleaks, config.JSONFormat, hunter.DefaultTemplate, 1)
 	h := hunter.NewHunter(config)
 
 	if err = h.Hunt(); err != nil {
@@ -342,7 +211,7 @@ This method also accepts custom output format configuration using go template/ht
 	}
 	defer env.cleanup()
 
-	config := hunter.NewConfig(env.TestFileName, true, env.Gitleaks, hunter.CustomFormat, hunter.DefaultTemplate, 1)
+	config := config.NewCfg(env.TestFileName, true, env.Gitleaks, config.CustomFormat, hunter.DefaultTemplate, 1)
 	h := hunter.NewHunter(config)
 
 	if err = h.Hunt(); err != nil {
@@ -397,7 +266,7 @@ Hunter will also look personally identifiable info in TOML files and format the 
 	}
 	defer env.cleanup()
 
-	config := hunter.NewConfig(env.TestFileName, true, env.Gitleaks, hunter.HTMLFormat, templates.HTML, 1)
+	config := config.NewCfg(env.TestFileName, true, env.Gitleaks, config.HTMLFormat, templates.HTML, 1)
 	h := hunter.NewHunter(config)
 
 	if err = h.Hunt(); err != nil {

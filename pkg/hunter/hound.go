@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/brittonhayes/pillager/pkg/config"
 	"github.com/brittonhayes/pillager/templates"
 	"github.com/ghodss/yaml"
 	"github.com/samsarahq/go/oops"
@@ -14,14 +15,14 @@ import (
 
 // A Hound performs file inspection and collects the results.
 type Hound struct {
-	OutputFormat   Format
+	OutputFormat   config.Format
 	CustomTemplate *string
 	Findings       *scan.Report `json:"findings"`
 }
 
 // NewHound creates an instance of the Hound type from the given Config.
-func NewHound(f Format, t *string) *Hound {
-	if f == CustomFormat && t == nil {
+func NewHound(f config.Format, t *string) *Hound {
+	if f == config.CustomFormat && t == nil {
 		log.Fatalln(oops.Errorf("invalid parameters for creating Hound"))
 	}
 
@@ -34,27 +35,27 @@ func (h *Hound) Howl() {
 	findings := *h.Findings
 
 	switch h.OutputFormat {
-	case JSONFormat:
+	case config.JSONFormat:
 		b, err := json.Marshal(&findings.Leaks)
 		if err != nil {
 			log.Fatal(oops.Wrapf(err, "unmarshal findings from json"))
 		}
 		fmt.Println(string(b))
-	case YAMLFormat:
+	case config.YAMLFormat:
 		b, err := yaml.Marshal(&findings.Leaks)
 		if err != nil {
 			log.Fatal(oops.Wrapf(err, "unmarshal findings from yaml"))
 		}
 		fmt.Println(string(b))
-	case HTMLFormat:
+	case config.HTMLFormat:
 		RenderTemplate(os.Stdout, templates.HTML, findings)
-	case HTMLTableFormat:
+	case config.HTMLTableFormat:
 		RenderTemplate(os.Stdout, templates.HTMLTable, findings)
-	case MarkdownFormat:
+	case config.MarkdownFormat:
 		RenderTemplate(os.Stdout, templates.Markdown, findings)
-	case TableFormat:
+	case config.TableFormat:
 		RenderTemplate(os.Stdout, templates.Table, findings)
-	case CustomFormat:
+	case config.CustomFormat:
 		if h.CustomTemplate == nil {
 			log.Fatalln(oops.Errorf("unable to execute Howl for CustomFormat with nil CustomTemplate"))
 		}

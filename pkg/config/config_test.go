@@ -1,16 +1,16 @@
-package hunter_test
+package config_test
 
 import (
 	"io/ioutil"
 	"os"
 	"testing"
 
-	"github.com/brittonhayes/pillager/pkg/hunter"
+	"github.com/brittonhayes/pillager/pkg/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestParseRulesFromConfigFile(t *testing.T) {
+func TestParsePillagerConfigFile(t *testing.T) {
 	testPillagerConfigStr := `
 	title = "pillager config"
 	[[rules]]
@@ -18,7 +18,7 @@ func TestParseRulesFromConfigFile(t *testing.T) {
 		regex = '''^[A-Z0-9_!#$%&'*+/=?{|}~^.-]+@[A-Z0-9.-]+$'''
 		tags = ["email"]
 	`
-	tmpValidConfig, err := ioutil.TempFile("", "toml-")
+	tmpValidConfig, err := ioutil.TempFile("", "~.toml")
 	require.NoError(t, err)
 	defer os.Remove(tmpValidConfig.Name())
 
@@ -54,7 +54,7 @@ func TestParseRulesFromConfigFile(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.desc, func(t *testing.T) {
-			gitleaks, err := hunter.ParseRulesFromConfigFile(tc.filepath)
+			gitleaks, err := config.ParsePillagerConfigFile(tc.filepath)
 
 			if tc.errExpected {
 				assert.Error(t, err)

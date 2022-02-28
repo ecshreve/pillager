@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/brittonhayes/pillager/pkg/hunter"
+	"github.com/brittonhayes/pillager/pkg/config"
 	"github.com/samsarahq/go/oops"
 	gitleaks "github.com/zricethezav/gitleaks/v7/config"
 )
@@ -26,7 +26,7 @@ func (e *HunterTestEnv) cleanup() {
 // huntTestEnvHelper is a convenient helper to create temporary files
 // with for the tests and examples in this package.
 func HuntTestEnvHelper(testFilePattern string, testFileContent string) (*HunterTestEnv, error) {
-	gl, err := hunter.ParseRulesFromConfigFile("./testdata/pillager_test_config.toml")
+	gl, err := config.ParsePillagerConfigFile("./testdata/pillager_test_config.toml")
 	if err != nil {
 		return nil, oops.Wrapf(err, "parsing config data for test env")
 	}
