@@ -1,33 +1,65 @@
 package config_test
 
 import (
-	"io/ioutil"
-	"os"
 	"testing"
 
 	"github.com/brittonhayes/pillager/pkg/config"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	gitleaks "github.com/zricethezav/gitleaks/v8/config"
 )
 
+func TestValidate(t *testing.T) {
+	testcases := []struct {
+		desc        string
+		cfg         *config.Cfg
+		errExpected bool
+	}{
+		{
+			desc:        "valid path",
+			cfg:         &config.Cfg{".", false, 1, 1, "", "", &gitleaks.Config{Rules: []*gitleaks.Rule{{Description: "test"}}}},
+			errExpected: false,
+		},
+		{
+			desc:        "invalid path",
+			cfg:         &config.Cfg{"adsfasd", false, 1, 1, "", "", &gitleaks.Config{Rules: []*gitleaks.Rule{{Description: "test"}}}},
+			errExpected: true,
+		},
+		{
+			desc:        "invalid format",
+			cfg:         &config.Cfg{".", false, 1, 7777, "", "", &gitleaks.Config{Rules: []*gitleaks.Rule{{Description: "test"}}}},
+			errExpected: true,
+		},
+		{
+			desc:        "invalid workers",
+			cfg:         &config.Cfg{".", false, 777, 1, "", "", &gitleaks.Config{Rules: []*gitleaks.Rule{{Description: "test"}}}},
+			errExpected: true,
+		},
+		{
+			desc:        "invalid rules",
+			cfg:         &config.Cfg{".", false, 1, 1, "", "", nil},
+			errExpected: true,
+		},
+		{
+			desc:        "invalid nested rule",
+			cfg:         &config.Cfg{".", false, 1, 1, "", "", &gitleaks.Config{}},
+			errExpected: true,
+		},
+	}
+
+	for _, testcase := range testcases {
+		t.Run(testcase.desc, func(t *testing.T) {
+			err := testcase.cfg.Validate()
+
+			if testcase.errExpected {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
 func TestParseRules(t *testing.T) {
-	testRulesStr := `
-	title = "gitleaks rules"
-	
-	[[rules]]
-		description = "email"
-		regex = '''^[A-Z0-9_!#$%&'*+/=?{|}~^.-]+@[A-Z0-9.-]+$'''
-		tags = ["email"]
-	`
-	tmpValidConfig, err := ioutil.TempFile("", "~.toml")
-	require.NoError(t, err)
-	defer os.Remove(tmpValidConfig.Name())
-
-	_, err = tmpValidConfig.WriteString(testRulesStr)
-	require.NoError(t, err)
-	err = tmpValidConfig.Close()
-	require.NoError(t, err)
-
 	testcases := []struct {
 		desc             string
 		filepath         string
@@ -41,9 +73,9 @@ func TestParseRules(t *testing.T) {
 		},
 		{
 			desc:             "valid custom filepath",
-			filepath:         tmpValidConfig.Name(),
+			filepath:         "./testdata/test.rules.toml",
 			errExpected:      false,
-			numRulesExpected: 1,
+			numRulesExpected: 95,
 		},
 		{
 			desc:             "no filepath provided",

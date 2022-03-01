@@ -16,6 +16,15 @@ const (
 	CustomFormat
 )
 
+// IsValid is a helper method to check the Format is one of the valid values.
+func (f Format) IsValid() bool {
+	switch f {
+	case JSONFormat, YAMLFormat, TableFormat, HTMLFormat, HTMLTableFormat, MarkdownFormat, CustomFormat:
+		return true
+	}
+	return false
+}
+
 // String implements the stringer interface for the Format type.
 func (f Format) String() string {
 	return [...]string{"", "json", "yaml", "table", "html", "html-table", "markdown", "custom"}[f]

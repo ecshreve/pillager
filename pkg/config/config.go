@@ -31,7 +31,7 @@ func NewCfg(path string, verbose bool, format Format, template string, workers i
 		rules = parsedRules
 	}
 
-	return &Cfg{
+	c := &Cfg{
 		BasePath:  path,
 		Verbose:   verbose,
 		Format:    format,
@@ -40,6 +40,12 @@ func NewCfg(path string, verbose bool, format Format, template string, workers i
 		RulesPath: rulesPath,
 		Rules:     rules,
 	}
+
+	if err := c.Validate(); err != nil {
+		log.Fatalln(oops.Wrapf(err, "unable to validate config: %v", c))
+	}
+
+	return c
 }
 
 // DefaultCfg returns a Cfg with default values for the Hunter.
@@ -47,15 +53,21 @@ func DefaultCfg() *Cfg {
 	return NewCfg("", false, JSONFormat, "", 1, "", nil)
 }
 
-// Validate returns an error if the given Config does not have Rules defined.
+// Validate returns an error if the given Config doesn't have valid field values.
 func (c *Cfg) Validate() error {
-	// If no file or directory exists at the given BasePath then set
-	// it to the default value
 	if _, err := os.Stat(c.BasePath); err != nil {
-		c.BasePath = ""
+		return oops.Errorf("path does not exist")
 	}
 
-	if c.Rules.Rules == nil {
+	if !c.Format.IsValid() {
+		return oops.Errorf("invalid format")
+	}
+
+	if c.Workers < 1 || c.Workers > 100 {
+		return oops.Errorf("number of workers out of bounds")
+	}
+
+	if c.Rules == nil || c.Rules.Rules == nil {
 		return oops.Errorf("no gitleaks rules provided")
 	}
 

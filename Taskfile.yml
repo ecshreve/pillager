@@ -35,6 +35,22 @@ tasks:
     cmds:
       - go test -v ./...
 
+  testc:
+    desc: run all tests and generate coverage
+    cmds:
+      - go test -covermode=set -coverprofile=coverage.out ./...
+    sources:
+      - ./**/*.go
+    generates:
+      - coverage.out
+    method: checksum
+
+  testc-view:
+    desc: view test coverage report
+    cmds:
+      - task: testc
+      - go tool cover -html=coverage.out
+
   build: 
     desc: run go build
     cmds:
