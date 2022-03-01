@@ -1,6 +1,7 @@
 package templates
 
 import (
+	// Blank embed needed to satisfy golint.
 	_ "embed"
 )
 
