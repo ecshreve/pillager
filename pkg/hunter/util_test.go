@@ -13,7 +13,7 @@ import (
 // HunterTestEnv is a convenient mechanism to handle test environment
 // setup and cleanup.
 type HunterTestEnv struct {
-	Gitleaks        *gitleaks.Config
+	Rules           *gitleaks.Config
 	TestFileName    string
 	TestFileContent string
 }
@@ -27,7 +27,7 @@ func (e *HunterTestEnv) cleanup() {
 // huntTestEnvHelper is a convenient helper to create temporary files
 // with for the tests and examples in this package.
 func HuntTestEnvHelper(testFilePattern string, testFileContent string) (*HunterTestEnv, error) {
-	gl, err := GetGitleaksConfigForTest()
+	r, err := GetRulesForTest()
 	if err != nil {
 		return nil, oops.Wrapf(err, "getting config data for test env")
 	}
@@ -44,16 +44,16 @@ func HuntTestEnvHelper(testFilePattern string, testFileContent string) (*HunterT
 	}
 
 	return &HunterTestEnv{
-		Gitleaks:        gl,
+		Rules:           r,
 		TestFileName:    f.Name(),
 		TestFileContent: testFileContent,
 	}, nil
 }
 
 // GetPillagerConfigForTest returns a basic gitleaks config for use in tests.
-func GetGitleaksConfigForTest() (*gitleaks.Config, error) {
+func GetRulesForTest() (*gitleaks.Config, error) {
 	var loader gitleaks.TomlLoader
-	if _, err := toml.Decode(config.PillagerConfigTomlForTest, &loader); err != nil {
+	if _, err := toml.Decode(config.RulesForTest, &loader); err != nil {
 		return nil, oops.Wrapf(err, "failed to load default config toml data")
 	}
 

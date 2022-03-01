@@ -1,9 +1,10 @@
 package config
 
-// DefaultPillagerConfig is the default ruleset for pillager's hunting parameters.
+// DefaultRules is the default ruleset for pillager's hunting parameters.
 // This can be overridden by providing a rules.toml file as an argument.
-const DefaultPillagerConfig = `
+const DefaultRules = `
 title = "pillager config"
+
 [[rules]]
 	description = "AWS Access Key"
 	regex = '''(A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}'''
@@ -36,9 +37,9 @@ title = "pillager config"
 	'''(go.mod|go.sum)$''']
 `
 
-// PillagerConfigTomlForTest is the string representaton of a basic pillager
+// RulesForTest is the string representaton of a basic pillager
 // config file in toml format.
-const PillagerConfigTomlForTest = `
+const RulesForTest = `
 title = "pillager test config"
 
 [[rules]]

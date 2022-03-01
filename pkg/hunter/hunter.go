@@ -44,8 +44,8 @@ func (h *Hunter) Hunt() error {
 		Threads: h.Config.Workers,
 	}
 	conf := gitleaks.Config{
-		Allowlist: h.Config.Gitleaks.Allowlist,
-		Rules:     h.Config.Gitleaks.Rules,
+		Allowlist: h.Config.Rules.Allowlist,
+		Rules:     h.Config.Rules.Rules,
 	}
 
 	scanner := scan.NewNoGitScanner(opt, conf)

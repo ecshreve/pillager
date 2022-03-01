@@ -19,7 +19,7 @@ func ExampleHunter_Hunt_simple() {
 	}
 	defer env.cleanup()
 
-	config := config.NewCfg(env.TestFileName, true, env.Gitleaks, config.JSONFormat, helpers.DefaultTemplate, 1)
+	config := config.NewCfg(env.TestFileName, true, config.JSONFormat, helpers.DefaultTemplate, 1, "", env.Rules)
 	h := hunter.NewHunter(config)
 
 	if err = h.Hunt(); err != nil {
@@ -62,7 +62,7 @@ func ExampleHunter_Hunt_template() {
 	}
 	defer env.cleanup()
 
-	config := config.NewCfg(env.TestFileName, true, env.Gitleaks, config.CustomFormat, helpers.DefaultTemplate, 1)
+	config := config.NewCfg(env.TestFileName, true, config.CustomFormat, helpers.DefaultTemplate, 1, "", env.Rules)
 	h := hunter.NewHunter(config)
 
 	if err = h.Hunt(); err != nil {
@@ -105,7 +105,7 @@ func ExampleHunter_Hunt_toml() {
 	}
 	defer env.cleanup()
 
-	config := config.NewCfg(env.TestFileName, true, env.Gitleaks, config.HTMLFormat, templates.HTML, 1)
+	config := config.NewCfg(env.TestFileName, true, config.HTMLFormat, templates.HTML, 1, "", env.Rules)
 	h := hunter.NewHunter(config)
 
 	if err = h.Hunt(); err != nil {

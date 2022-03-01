@@ -9,7 +9,6 @@ import (
 
 	"github.com/brittonhayes/pillager/pkg/config"
 	"github.com/brittonhayes/pillager/pkg/hunter"
-	"github.com/samsarahq/go/oops"
 	"github.com/spf13/cobra"
 )
 
@@ -68,18 +67,14 @@ func init() {
 // then creates a Hunter from the Config and executes it's Hunt function.
 func startHunt() func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
-		gitleaks, err := config.ParsePillagerConfigFile(rulesConfig)
-		if err != nil {
-			return oops.Wrapf(err, "unable to get gitleaks rules for config")
-		}
-
 		c := config.NewCfg(
 			args[0],
 			verbose,
-			gitleaks,
 			config.StringToFormat(output),
 			templ,
 			workers,
+			rulesConfig,
+			nil,
 		)
 
 		h := hunter.NewHunter(c)

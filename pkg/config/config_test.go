@@ -10,9 +10,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestParsePillagerConfigFile(t *testing.T) {
-	testPillagerConfigStr := `
-	title = "pillager config"
+func TestParseRules(t *testing.T) {
+	testGitleaksStr := `
+	title = "gitleaks rules"
 	[[rules]]
 		description = "email"
 		regex = '''^[A-Z0-9_!#$%&'*+/=?{|}~^.-]+@[A-Z0-9.-]+$'''
@@ -22,7 +22,7 @@ func TestParsePillagerConfigFile(t *testing.T) {
 	require.NoError(t, err)
 	defer os.Remove(tmpValidConfig.Name())
 
-	_, err = tmpValidConfig.WriteString(testPillagerConfigStr)
+	_, err = tmpValidConfig.WriteString(testGitleaksStr)
 	require.NoError(t, err)
 	err = tmpValidConfig.Close()
 	require.NoError(t, err)
@@ -54,15 +54,15 @@ func TestParsePillagerConfigFile(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.desc, func(t *testing.T) {
-			gitleaks, err := config.ParsePillagerConfigFile(tc.filepath)
+			rules, err := config.ParseRules(tc.filepath)
 
 			if tc.errExpected {
 				assert.Error(t, err)
-				assert.Nil(t, gitleaks)
+				assert.Nil(t, rules)
 			} else {
 				assert.NoError(t, err)
-				assert.NotNil(t, gitleaks)
-				assert.Len(t, gitleaks.Rules, tc.numRulesExpected)
+				assert.NotNil(t, rules)
+				assert.Len(t, rules.Rules, tc.numRulesExpected)
 			}
 		})
 	}

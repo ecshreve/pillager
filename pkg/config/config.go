@@ -11,43 +11,42 @@ import (
 
 // Cfg holds all the configurable parameters for a Hunter.
 type Cfg struct {
-	BasePath string
-	Verbose  bool
-	Workers  int
-	Gitleaks *gitleaks.Config
-	Format   Format
-	Template string
+	BasePath  string
+	Verbose   bool
+	Workers   int
+	Format    Format
+	Template  string
+	RulesPath string
+	Rules     *gitleaks.Config
 }
 
 // NewCfg validates the given path and returns a new Config.
-func NewCfg(path string, verbose bool, gitleaks *gitleaks.Config, format Format, template string, workers int) *Cfg {
+func NewCfg(path string, verbose bool, format Format, template string, workers int, rulesPath string, rules *gitleaks.Config) *Cfg {
+	if rules == nil {
+		parsedRules, err := ParseRules(rulesPath)
+		if err != nil {
+			log.Fatalln(oops.Wrapf(err, "parsing default pillager config file"))
+		}
+		rules = parsedRules
+	}
+
 	return &Cfg{
-		BasePath: path,
-		Verbose:  verbose,
-		Gitleaks: gitleaks,
-		Format:   format,
-		Template: template,
-		Workers:  workers,
+		BasePath:  path,
+		Verbose:   verbose,
+		Format:    format,
+		Template:  template,
+		Workers:   workers,
+		RulesPath: rulesPath,
+		Rules:     rules,
 	}
 }
 
 // DefaultCfg returns a Cfg with default values for the Hunter.
 func DefaultCfg() *Cfg {
-	gitleaks, err := ParsePillagerConfigFile("")
-	if err != nil {
-		log.Fatalln(oops.Wrapf(err, "parsing default pillager config file"))
-	}
-
-	return &Cfg{
-		BasePath: "",
-		Verbose:  false,
-		Gitleaks: gitleaks,
-		Format:   JSONFormat,
-	}
+	return NewCfg("", false, JSONFormat, "", 1, "", nil)
 }
 
-// Validate returns an error if the given Config does not have the System
-// or Rules fields populated.
+// Validate returns an error if the given Config does not have Rules defined.
 func (c *Cfg) Validate() error {
 	// If no file or directory exists at the given BasePath then set
 	// it to the default value
@@ -55,16 +54,16 @@ func (c *Cfg) Validate() error {
 		c.BasePath = ""
 	}
 
-	if c.Gitleaks.Rules == nil {
+	if c.Rules.Rules == nil {
 		return oops.Errorf("no gitleaks rules provided")
 	}
 
 	return nil
 }
 
-// ParsePillagerConfigFile loads the rules defined in the config file
+// ParseRules loads the rules defined in the rules.toml file
 // into a list of gitleaks rules.
-func ParsePillagerConfigFile(filepath string) (*gitleaks.Config, error) {
+func ParseRules(filepath string) (*gitleaks.Config, error) {
 	var loader gitleaks.TomlLoader
 
 	if filepath != "" {
@@ -72,7 +71,7 @@ func ParsePillagerConfigFile(filepath string) (*gitleaks.Config, error) {
 			return nil, oops.Wrapf(err, "failed to load config TOML data from file")
 		}
 	} else {
-		if _, err := toml.Decode(DefaultPillagerConfig, &loader); err != nil {
+		if _, err := toml.Decode(DefaultRules, &loader); err != nil {
 			return nil, oops.Wrapf(err, "failed to load default config TOML data")
 		}
 	}
