@@ -73,5 +73,11 @@ tasks:
     cmds:
       - task: mod
       - task: build
+
+  local-godoc:
+    desc: serve godoc server locally
+    cmds:
+      - echo "documentation is available at  http://localhost:6060/pkg/github.com/brittonhayes/pillager/"
+      - godoc -http=:6060 
       
  
