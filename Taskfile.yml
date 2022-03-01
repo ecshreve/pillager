@@ -66,5 +66,12 @@ tasks:
       - task: clean
       - task: mod
       - task: build
-      - task: gen-docs   
+      - task: gen-docs
+
+  dev-setup:
+    desc: set things up for local development
+    cmds:
+      - task: mod
+      - task: build
+      
  

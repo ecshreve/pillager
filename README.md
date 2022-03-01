@@ -16,6 +16,7 @@
 1. [Installation](#installation)
 1. [Usage](#usage)
 1. [Documentation](#documentation)
+1. [Local Development](#local-development)
 
 ## Summary
 
@@ -84,6 +85,7 @@ title = "pillager rules"
 description = "AWS Access Key"
 regex = '''(A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}'''
 tags = ["key", "AWS"]
+
 [[rules.entropies]]
 Min = "3.5"
 Max = "4.5"
@@ -247,3 +249,47 @@ Check out the included [rules.toml](./rules.toml) for a baseline ruleset.
 > [MITRE ATT&CK Technique - T1552,003 - Unsecured Credentials: Bash History ](https://attack.mitre.org/techniques/T1552/003/)
 > 
 > [MITRE ATT&CK Technique - T1552,001 - Unsecured Credentials: Credentials In Files](https://attack.mitre.org/techniques/T1552/001/)
+
+---
+
+## Local Development
+
+This project uses [Task](https://taskfile.dev/) to easily build and run the application for local development. You
+can [install Task here](https://taskfile.dev/#/installation). Task is a simple alternative to makefiles.
+
+> List available tasks with `task -l`
+
+```shell
+task: Available tasks for this project:
+* build:        run go build
+* clean:        remove executables, temporary, and cached files
+* dev-setup:    set things up for local development
+* gen-docs:     generate documentation via gomarkdocwn
+* install:      install executable
+* lint:         runs golint
+* mod:          download and tidy go modules
+* polish:       clean build and generate everything
+* run:          run the executable
+* test:         run all tests
+* testv:        run all tests verbose
+```
+
+### Quick Start
+
+> This section assumes you already have Go installed.
+
+Fork the repository, clone it, navigate to repository root.
+
+```shell
+git clone https://github.com/ecshreve/pillager.git
+cd pillager
+```
+
+Download module dependencies and and build the application.
+
+```shell
+task dev-setup
+```
+
+From here you should be all set to make changes and build and run the application.
+
