@@ -13,7 +13,7 @@ import (
 // This is an example of how to run a scan on a single file to look for
 // email addresses.
 func ExampleHunter_Hunt_simple() {
-	env, err := HuntTestEnvHelper("~.toml", "example@email.com")
+	env, err := HuntTestEnvHelper("~tmp.toml", "example@email.com")
 	if err != nil {
 		log.Fatalln(oops.Wrapf(err, "creating test env"))
 	}
@@ -56,7 +56,7 @@ func ExampleHunter_Hunt_simple() {
 // using go template/html. So if you don't like yaml or json, you can
 // format to your heart's content.
 func ExampleHunter_Hunt_template() {
-	env, err := HuntTestEnvHelper("~.yaml", "https://github.com/brittonhayes/pillager")
+	env, err := HuntTestEnvHelper("~tmp.yaml", "https://github.com/brittonhayes/pillager")
 	if err != nil {
 		log.Fatalln(oops.Wrapf(err, "creating test env"))
 	}
@@ -99,7 +99,7 @@ func ExampleHunter_Hunt_template() {
 // Hunter will also look personally identifiable info in TOML files and
 // format the output as HTML.
 func ExampleHunter_Hunt_toml() {
-	env, err := HuntTestEnvHelper("~.toml", "fakeperson@example.com")
+	env, err := HuntTestEnvHelper("~tmp.toml", "fakeperson@example.com")
 	if err != nil {
 		log.Fatalln(oops.Wrapf(err, "creating test env"))
 	}

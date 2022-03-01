@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/BurntSushi/toml"
 	"github.com/brittonhayes/pillager/pkg/config"
 	"github.com/samsarahq/go/oops"
 	gitleaks "github.com/zricethezav/gitleaks/v7/config"
@@ -26,9 +27,9 @@ func (e *HunterTestEnv) cleanup() {
 // huntTestEnvHelper is a convenient helper to create temporary files
 // with for the tests and examples in this package.
 func HuntTestEnvHelper(testFilePattern string, testFileContent string) (*HunterTestEnv, error) {
-	gl, err := config.ParsePillagerConfigFile("./testdata/pillager_test_config.toml")
+	gl, err := GetGitleaksConfigForTest()
 	if err != nil {
-		return nil, oops.Wrapf(err, "parsing config data for test env")
+		return nil, oops.Wrapf(err, "getting config data for test env")
 	}
 	// Create test file to scan and write some data into it.
 	f, err := os.CreateTemp("./testdata", testFilePattern)
@@ -47,4 +48,19 @@ func HuntTestEnvHelper(testFilePattern string, testFileContent string) (*HunterT
 		TestFileName:    f.Name(),
 		TestFileContent: testFileContent,
 	}, nil
+}
+
+// GetPillagerConfigForTest returns a basic gitleaks config for use in tests.
+func GetGitleaksConfigForTest() (*gitleaks.Config, error) {
+	var loader gitleaks.TomlLoader
+	if _, err := toml.Decode(config.PillagerConfigTomlForTest, &loader); err != nil {
+		return nil, oops.Wrapf(err, "failed to load default config toml data")
+	}
+
+	config, err := loader.Parse()
+	if err != nil {
+		return nil, oops.Wrapf(err, "failed to parse toml data to gitleaks config")
+	}
+
+	return &config, nil
 }

@@ -35,3 +35,26 @@ title = "pillager config"
 	'''(.*?)(png|jpg|gif|doc|docx|pdf|bin|xls|pyc|zip)$''',
 	'''(go.mod|go.sum)$''']
 `
+
+// PillagerConfigTomlForTest is the string representaton of a basic pillager
+// config file in toml format.
+const PillagerConfigTomlForTest = `
+title = "pillager test config"
+
+[[rules]]
+	description = "Email"
+	regex = '''[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}'''
+	tags = ["email"]
+
+[[rules]]
+	description = "Github"
+	regex = '''^.*github.*$'''
+	tags = ["github"]
+
+[allowlist]
+	description = "global allow list"
+	paths = [
+		'''gitleaks.toml''',
+		'''(.*?)(jpg|gif|doc|pdf|bin|svg|socket)$'''
+	]
+`

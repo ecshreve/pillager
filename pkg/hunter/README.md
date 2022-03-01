@@ -128,7 +128,7 @@ This is an example of how to run a scan on a single file to look for email addre
 
 ```go
 {
-	env, err := HuntTestEnvHelper("~.toml", "example@email.com")
+	env, err := HuntTestEnvHelper("~tmp.toml", "example@email.com")
 	if err != nil {
 		log.Fatalln(oops.Wrapf(err, "creating test env"))
 	}
@@ -181,7 +181,7 @@ This method also accepts custom output format configuration using go template/ht
 
 ```go
 {
-	env, err := HuntTestEnvHelper("~.yaml", "https://github.com/brittonhayes/pillager")
+	env, err := HuntTestEnvHelper("~tmp.yaml", "https://github.com/brittonhayes/pillager")
 	if err != nil {
 		log.Fatalln(oops.Wrapf(err, "creating test env"))
 	}
@@ -236,7 +236,7 @@ Hunter will also look personally identifiable info in TOML files and format the 
 
 ```go
 {
-	env, err := HuntTestEnvHelper("~.toml", "fakeperson@example.com")
+	env, err := HuntTestEnvHelper("~tmp.toml", "fakeperson@example.com")
 	if err != nil {
 		log.Fatalln(oops.Wrapf(err, "creating test env"))
 	}
