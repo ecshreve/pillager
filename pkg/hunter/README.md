@@ -10,15 +10,34 @@ Package hunter contains the types\, methods\, and interfaces for the file huntin
 
 ## Index
 
+- [func BuildOutputString(f config.Format, tmp *string, rep Report) string](<#func-buildoutputstring>)
+- [func RenderTemplate(w io.Writer, tpl string, r Report)](<#func-rendertemplate>)
 - [type Hound](<#type-hound>)
   - [func NewHound(f config.Format, t *string) *Hound](<#func-newhound>)
   - [func (h *Hound) Howl()](<#func-hound-howl>)
 - [type Hunter](<#type-hunter>)
   - [func NewHunter(c *config.Cfg) *Hunter](<#func-newhunter>)
   - [func (h *Hunter) Hunt() error](<#func-hunter-hunt>)
+- [type Report](<#type-report>)
 
 
-## type [Hound](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L14-L18>)
+## func [BuildOutputString](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L60>)
+
+```go
+func BuildOutputString(f config.Format, tmp *string, rep Report) string
+```
+
+BuildOutputString returns the string result of applying the given template and format to the data in the report\.
+
+## func [RenderTemplate](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L47>)
+
+```go
+func RenderTemplate(w io.Writer, tpl string, r Report)
+```
+
+RenderTemplate renders a Hound finding in a custom go template format to the provided writer\.
+
+## type [Hound](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L23-L27>)
 
 A Hound performs file inspection and collects the results\.
 
@@ -26,11 +45,11 @@ A Hound performs file inspection and collects the results\.
 type Hound struct {
     OutputFormat   config.Format
     CustomTemplate *string
-    Findings       *scan.Report `json:"findings"`
+    Findings       *Report `json:"findings"`
 }
 ```
 
-### func [NewHound](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L21>)
+### func [NewHound](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L30>)
 
 ```go
 func NewHound(f config.Format, t *string) *Hound
@@ -38,7 +57,7 @@ func NewHound(f config.Format, t *string) *Hound
 
 NewHound creates an instance of the Hound type from the given Config\.
 
-### func \(\*Hound\) [Howl](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L30>)
+### func \(\*Hound\) [Howl](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L39>)
 
 ```go
 func (h *Hound) Howl()
@@ -55,21 +74,21 @@ Here is an example of utilizing the Howl function on a slice of findings\. The H
 {
 	h := NewHound(config.CustomFormat, &templates.Table)
 
-	h.Findings = &scan.Report{
-		Leaks: []scan.Leak{
+	h.Findings = &Report{
+		Leaks: []report.Finding{
 			{
-				Line:       "person@email.com",
-				LineNumber: 16,
-				Offender:   "person@email.com",
-				Rule:       "Email Addresses",
-				File:       "example.txt",
+				Secret:    "person@email.com",
+				StartLine: 16,
+				Match:     "person@email.com",
+				RuleID:    "Email Addresses",
+				File:      "example.txt",
 			},
 			{
-				Line:       "fred@email.com",
-				LineNumber: 29,
-				Offender:   "fred@email.com",
-				Rule:       "Email Addresses",
-				File:       "example2.txt",
+				Secret:    "fred@email.com",
+				StartLine: 29,
+				Match:     "fred@email.com",
+				RuleID:    "Email Addresses",
+				File:      "example2.txt",
 			},
 		},
 	}
@@ -94,9 +113,9 @@ Hooooowl -- 🐕
 </p>
 </details>
 
-## type [Hunter](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hunter.go#L15-L18>)
+## type [Hunter](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hunter.go#L12-L15>)
 
-Hunter holds the required fields to implement the Hunting interface and utilize the hunter package\.
+Hunter holds configuration and reference to a Hound\.
 
 ```go
 type Hunter struct {
@@ -105,7 +124,7 @@ type Hunter struct {
 }
 ```
 
-### func [NewHunter](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hunter.go#L21>)
+### func [NewHunter](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hunter.go#L18>)
 
 ```go
 func NewHunter(c *config.Cfg) *Hunter
@@ -113,7 +132,7 @@ func NewHunter(c *config.Cfg) *Hunter
 
 NewHunter creates an instance of the Hunter type from the given Config\.
 
-### func \(\*Hunter\) [Hunt](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hunter.go#L36>)
+### func \(\*Hunter\) [Hunt](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hunter.go#L33>)
 
 ```go
 func (h *Hunter) Hunt() error
@@ -128,13 +147,12 @@ This is an example of how to run a scan on a single file to look for email addre
 
 ```go
 {
-	env, err := HuntTestEnvHelper("~tmp.toml", "example@email.com")
+	env, err := HuntTestEnvHelper("./testdata/email.toml", "example@email.com")
 	if err != nil {
 		log.Fatalln(oops.Wrapf(err, "creating test env"))
 	}
-	defer env.cleanup()
 
-	config := config.NewCfg(env.TestFileName, true, env.Gitleaks, config.JSONFormat, helpers.DefaultTemplate, 1)
+	config := config.NewCfg("./testdata/email.toml", true, config.JSONFormat, config.DefaultTemplate, 1, "", env.Rules)
 	h := hunter.NewHunter(config)
 
 	if err = h.Hunt(); err != nil {
@@ -148,27 +166,30 @@ This is an example of how to run a scan on a single file to look for email addre
 
 ```
 {
-	"line": "example@email.com",
-	"lineNumber": 1,
-	"offender": "example@email.com",
-	"offenderEntropy": -1,
-	"commit": "",
-	"repo": "",
-	"repoURL": "",
-	"leakURL": "",
-	"rule": "Email",
-	"commitMessage": "",
-	"author": "",
-	"email": "",
-	"file": ".",
-	"date": "0001-01-01T00:00:00Z",
-	"tags": "email"
+	"Description": "Email",
+	"StartLine": 2,
+	"EndLine": 2,
+	"StartColumn": 1,
+	"EndColumn": 17,
+	"Match": "example@email.com",
+	"Secret": "example@email.com",
+	"File": "./testdata/email.toml",
+	"Commit": "",
+	"Entropy": 0,
+	"Author": "",
+	"Email": "",
+	"Date": "",
+	"Message": "",
+	"Tags": [
+		"email"
+	],
+	"RuleID": ""
 }
 
 ---
 Hooooowl -- 🐕
 ---
-[{"line":"example@email.com","lineNumber":1,"offender":"example@email.com","offenderEntropy":-1,"commit":"","repo":"","repoURL":"","leakURL":"","rule":"Email","commitMessage":"","author":"","email":"","file":".","date":"0001-01-01T00:00:00Z","tags":"email"}]
+[{"Description":"Email","StartLine":2,"EndLine":2,"StartColumn":1,"EndColumn":17,"Match":"example@email.com","Secret":"example@email.com","File":"./testdata/email.toml","Commit":"","Entropy":0,"Author":"","Email":"","Date":"","Message":"","Tags":["email"],"RuleID":""}]
 ```
 
 </p>
@@ -181,13 +202,12 @@ This method also accepts custom output format configuration using go template/ht
 
 ```go
 {
-	env, err := HuntTestEnvHelper("~tmp.yaml", "https://github.com/brittonhayes/pillager")
+	env, err := HuntTestEnvHelper("./testdata/package.toml", "https://github.com/brittonhayes/pillager")
 	if err != nil {
 		log.Fatalln(oops.Wrapf(err, "creating test env"))
 	}
-	defer env.cleanup()
 
-	config := config.NewCfg(env.TestFileName, true, env.Gitleaks, config.CustomFormat, helpers.DefaultTemplate, 1)
+	config := config.NewCfg("./testdata/package.toml", true, config.CustomFormat, config.DefaultTemplate, 1, "", env.Rules)
 	h := hunter.NewHunter(config)
 
 	if err = h.Hunt(); err != nil {
@@ -201,28 +221,31 @@ This method also accepts custom output format configuration using go template/ht
 
 ```
 {
-	"line": "https://github.com/brittonhayes/pillager",
-	"lineNumber": 1,
-	"offender": "https://github.com/brittonhayes/pillager",
-	"offenderEntropy": -1,
-	"commit": "",
-	"repo": "",
-	"repoURL": "",
-	"leakURL": "",
-	"rule": "Github",
-	"commitMessage": "",
-	"author": "",
-	"email": "",
-	"file": ".",
-	"date": "0001-01-01T00:00:00Z",
-	"tags": "github"
+	"Description": "Github",
+	"StartLine": 2,
+	"EndLine": 2,
+	"StartColumn": 1,
+	"EndColumn": 40,
+	"Match": "https://github.com/brittonhayes/pillager",
+	"Secret": "https://github.com/brittonhayes/pillager",
+	"File": "./testdata/package.toml",
+	"Commit": "",
+	"Entropy": 0,
+	"Author": "",
+	"Email": "",
+	"Date": "",
+	"Message": "",
+	"Tags": [
+		"github"
+	],
+	"RuleID": ""
 }
 
 ---
 Hooooowl -- 🐕
 ---
-Line: 1
-File: .
+Line: 2
+File: ./testdata/package.toml
 Offender: https://github.com/brittonhayes/pillager
 ```
 
@@ -236,13 +259,12 @@ Hunter will also look personally identifiable info in TOML files and format the 
 
 ```go
 {
-	env, err := HuntTestEnvHelper("~tmp.toml", "fakeperson@example.com")
+	env, err := HuntTestEnvHelper("./testdata/email.toml", "fakeperson@example.com")
 	if err != nil {
 		log.Fatalln(oops.Wrapf(err, "creating test env"))
 	}
-	defer env.cleanup()
 
-	config := config.NewCfg(env.TestFileName, true, env.Gitleaks, config.HTMLFormat, templates.HTML, 1)
+	config := config.NewCfg(env.TestFilePath, true, config.HTMLFormat, templates.HTML, 1, "", env.Rules)
 	h := hunter.NewHunter(config)
 
 	if err = h.Hunt(); err != nil {
@@ -253,6 +275,14 @@ Hunter will also look personally identifiable info in TOML files and format the 
 
 </p>
 </details>
+
+## type [Report](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L18-L20>)
+
+```go
+type Report struct {
+    Leaks []report.Finding
+}
+```
 
 
 

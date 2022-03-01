@@ -11,10 +11,10 @@ Package config contains the types\, methods\, and interfaces related to configur
 ## Index
 
 - [Constants](<#constants>)
-- [func ParsePillagerConfigFile(filepath string) (*gitleaks.Config, error)](<#func-parsepillagerconfigfile>)
+- [func ParseRules(filepath string) (*gitleaks.Config, error)](<#func-parserules>)
 - [type Cfg](<#type-cfg>)
   - [func DefaultCfg() *Cfg](<#func-defaultcfg>)
-  - [func NewCfg(path string, verbose bool, gitleaks *gitleaks.Config, format Format, template string, workers int) *Cfg](<#func-newcfg>)
+  - [func NewCfg(path string, verbose bool, format Format, template string, workers int, rulesPath string, rules *gitleaks.Config) *Cfg](<#func-newcfg>)
   - [func (c *Cfg) Validate() error](<#func-cfg-validate>)
 - [type Format](<#type-format>)
   - [func StringToFormat(s string) Format](<#func-stringtoformat>)
@@ -23,11 +23,12 @@ Package config contains the types\, methods\, and interfaces related to configur
 
 ## Constants
 
-DefaultPillagerConfig is the default ruleset for pillager's hunting parameters\. This can be overridden by providing a rules\.toml file as an argument\.
+DefaultRules is the default ruleset for pillager's hunting parameters\. This can be overridden by providing a rules\.toml file as an argument\.
 
 ```go
-const DefaultPillagerConfig = `
-title = "pillager config"
+const DefaultRules = `
+title = "gitleaks rules"
+
 [[rules]]
 	description = "AWS Access Key"
 	regex = '''(A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}'''
@@ -61,11 +62,23 @@ title = "pillager config"
 `
 ```
 
-PillagerConfigTomlForTest is the string representaton of a basic pillager config file in toml format\.
+DefaultTemplate is the base template used to format a Report into the custom output format\.
 
 ```go
-const PillagerConfigTomlForTest = `
-title = "pillager test config"
+const DefaultTemplate = `{{ with . -}}
+{{ range .Leaks -}}
+Line: {{.StartLine}}
+File: {{ .File }}
+Offender: {{ .Match }}
+
+{{ end -}}{{- end}}`
+```
+
+RulesForTest is the string representaton of a basic pillager config file in toml format\.
+
+```go
+const RulesForTest = `
+title = "gitleaks test rules"
 
 [[rules]]
 	description = "Email"
@@ -86,15 +99,15 @@ title = "pillager test config"
 `
 ```
 
-## func [ParsePillagerConfigFile](<https://github.com/brittonhayes/pillager/blob/main/pkg/config/config.go#L67>)
+## func [ParseRules](<https://github.com/brittonhayes/pillager/blob/main/pkg/config/config.go#L67>)
 
 ```go
-func ParsePillagerConfigFile(filepath string) (*gitleaks.Config, error)
+func ParseRules(filepath string) (*gitleaks.Config, error)
 ```
 
-ParsePillagerConfigFile loads the rules defined in the config file into a list of gitleaks rules\.
+ParseRules loads the rules defined in the rules\.toml file into a list of gitleaks rules\.
 
-## type [Cfg](<https://github.com/brittonhayes/pillager/blob/main/pkg/config/config.go#L13-L20>)
+## type [Cfg](<https://github.com/brittonhayes/pillager/blob/main/pkg/config/config.go#L13-L22>)
 
 Cfg holds all the configurable parameters for a Hunter\.
 
@@ -103,13 +116,15 @@ type Cfg struct {
     BasePath string
     Verbose  bool
     Workers  int
-    Gitleaks *gitleaks.Config
     Format   Format
     Template string
+
+    RulesPath string
+    Rules     *gitleaks.Config
 }
 ```
 
-### func [DefaultCfg](<https://github.com/brittonhayes/pillager/blob/main/pkg/config/config.go#L35>)
+### func [DefaultCfg](<https://github.com/brittonhayes/pillager/blob/main/pkg/config/config.go#L46>)
 
 ```go
 func DefaultCfg() *Cfg
@@ -117,10 +132,10 @@ func DefaultCfg() *Cfg
 
 DefaultCfg returns a Cfg with default values for the Hunter\.
 
-### func [NewCfg](<https://github.com/brittonhayes/pillager/blob/main/pkg/config/config.go#L23>)
+### func [NewCfg](<https://github.com/brittonhayes/pillager/blob/main/pkg/config/config.go#L25>)
 
 ```go
-func NewCfg(path string, verbose bool, gitleaks *gitleaks.Config, format Format, template string, workers int) *Cfg
+func NewCfg(path string, verbose bool, format Format, template string, workers int, rulesPath string, rules *gitleaks.Config) *Cfg
 ```
 
 NewCfg validates the given path and returns a new Config\.
@@ -131,7 +146,7 @@ NewCfg validates the given path and returns a new Config\.
 func (c *Cfg) Validate() error
 ```
 
-Validate returns an error if the given Config does not have the System or Rules fields populated\.
+Validate returns an error if the given Config does not have Rules defined\.
 
 ## type [Format](<https://github.com/brittonhayes/pillager/blob/main/pkg/config/format.go#L6>)
 

@@ -28,8 +28,8 @@
                 {{ range .Leaks }}
                     <tr>
                         <th>{{.File}}</th>
-                        <td>{{.LineNumber}}</td>
-                        <td class="has-text-danger">{{.Offender}}</td>
+                        <td>{{.StartLine}}</td>
+                        <td class="has-text-danger">{{.Match}}</td>
                     </tr>
                 {{ end }}
                 </tbody>

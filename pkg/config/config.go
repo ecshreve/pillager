@@ -6,16 +6,17 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/samsarahq/go/oops"
-	gitleaks "github.com/zricethezav/gitleaks/v7/config"
+	gitleaks "github.com/zricethezav/gitleaks/v8/config"
 )
 
 // Cfg holds all the configurable parameters for a Hunter.
 type Cfg struct {
-	BasePath  string
-	Verbose   bool
-	Workers   int
-	Format    Format
-	Template  string
+	BasePath string
+	Verbose  bool
+	Workers  int
+	Format   Format
+	Template string
+
 	RulesPath string
 	Rules     *gitleaks.Config
 }
@@ -64,7 +65,7 @@ func (c *Cfg) Validate() error {
 // ParseRules loads the rules defined in the rules.toml file
 // into a list of gitleaks rules.
 func ParseRules(filepath string) (*gitleaks.Config, error) {
-	var loader gitleaks.TomlLoader
+	var loader gitleaks.ViperConfig
 
 	if filepath != "" {
 		if _, err := toml.DecodeFile(filepath, &loader); err != nil {
@@ -76,7 +77,7 @@ func ParseRules(filepath string) (*gitleaks.Config, error) {
 		}
 	}
 
-	config, err := loader.Parse()
+	config, err := loader.Translate()
 	if err != nil {
 		return nil, oops.Wrapf(err, "failed to parse toml data to gitleaks config")
 	}

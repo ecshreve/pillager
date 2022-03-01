@@ -4,7 +4,6 @@ import (
 	"log"
 
 	"github.com/brittonhayes/pillager/pkg/config"
-	"github.com/brittonhayes/pillager/pkg/helpers"
 	"github.com/brittonhayes/pillager/pkg/hunter"
 	"github.com/brittonhayes/pillager/templates"
 	"github.com/samsarahq/go/oops"
@@ -13,13 +12,12 @@ import (
 // This is an example of how to run a scan on a single file to look for
 // email addresses.
 func ExampleHunter_Hunt_simple() {
-	env, err := HuntTestEnvHelper("~tmp.toml", "example@email.com")
+	env, err := HuntTestEnvHelper("./testdata/email.toml", "example@email.com")
 	if err != nil {
 		log.Fatalln(oops.Wrapf(err, "creating test env"))
 	}
-	defer env.cleanup()
 
-	config := config.NewCfg(env.TestFileName, true, config.JSONFormat, helpers.DefaultTemplate, 1, "", env.Rules)
+	config := config.NewCfg("./testdata/email.toml", true, config.JSONFormat, config.DefaultTemplate, 1, "", env.Rules)
 	h := hunter.NewHunter(config)
 
 	if err = h.Hunt(); err != nil {
@@ -28,41 +26,42 @@ func ExampleHunter_Hunt_simple() {
 
 	// Output:
 	// {
-	// 	"line": "example@email.com",
-	// 	"lineNumber": 1,
-	// 	"offender": "example@email.com",
-	// 	"offenderEntropy": -1,
-	// 	"commit": "",
-	// 	"repo": "",
-	// 	"repoURL": "",
-	// 	"leakURL": "",
-	// 	"rule": "Email",
-	// 	"commitMessage": "",
-	// 	"author": "",
-	// 	"email": "",
-	// 	"file": ".",
-	// 	"date": "0001-01-01T00:00:00Z",
-	// 	"tags": "email"
+	// 	"Description": "Email",
+	// 	"StartLine": 2,
+	// 	"EndLine": 2,
+	// 	"StartColumn": 1,
+	// 	"EndColumn": 17,
+	// 	"Match": "example@email.com",
+	// 	"Secret": "example@email.com",
+	//	"File": "./testdata/email.toml",
+	// 	"Commit": "",
+	// 	"Entropy": 0,
+	// 	"Author": "",
+	// 	"Email": "",
+	// 	"Date": "",
+	// 	"Message": "",
+	// 	"Tags": [
+	// 		"email"
+	// 	],
+	// 	"RuleID": ""
 	// }
 	//
 	// ---
 	// Hooooowl -- 🐕
 	// ---
-	// [{"line":"example@email.com","lineNumber":1,"offender":"example@email.com","offenderEntropy":-1,"commit":"","repo":"","repoURL":"","leakURL":"","rule":"Email","commitMessage":"","author":"","email":"","file":".","date":"0001-01-01T00:00:00Z","tags":"email"}]
-	//
+	// [{"Description":"Email","StartLine":2,"EndLine":2,"StartColumn":1,"EndColumn":17,"Match":"example@email.com","Secret":"example@email.com","File":"./testdata/email.toml","Commit":"","Entropy":0,"Author":"","Email":"","Date":"","Message":"","Tags":["email"],"RuleID":""}]
 }
 
 // This method also accepts custom output format configuration
 // using go template/html. So if you don't like yaml or json, you can
 // format to your heart's content.
 func ExampleHunter_Hunt_template() {
-	env, err := HuntTestEnvHelper("~tmp.yaml", "https://github.com/brittonhayes/pillager")
+	env, err := HuntTestEnvHelper("./testdata/package.toml", "https://github.com/brittonhayes/pillager")
 	if err != nil {
 		log.Fatalln(oops.Wrapf(err, "creating test env"))
 	}
-	defer env.cleanup()
 
-	config := config.NewCfg(env.TestFileName, true, config.CustomFormat, helpers.DefaultTemplate, 1, "", env.Rules)
+	config := config.NewCfg("./testdata/package.toml", true, config.CustomFormat, config.DefaultTemplate, 1, "", env.Rules)
 	h := hunter.NewHunter(config)
 
 	if err = h.Hunt(); err != nil {
@@ -71,41 +70,43 @@ func ExampleHunter_Hunt_template() {
 
 	// Output:
 	// {
-	// 	"line": "https://github.com/brittonhayes/pillager",
-	// 	"lineNumber": 1,
-	// 	"offender": "https://github.com/brittonhayes/pillager",
-	// 	"offenderEntropy": -1,
-	// 	"commit": "",
-	// 	"repo": "",
-	// 	"repoURL": "",
-	// 	"leakURL": "",
-	// 	"rule": "Github",
-	// 	"commitMessage": "",
-	// 	"author": "",
-	// 	"email": "",
-	// 	"file": ".",
-	// 	"date": "0001-01-01T00:00:00Z",
-	// 	"tags": "github"
+	// 	"Description": "Github",
+	// 	"StartLine": 2,
+	// 	"EndLine": 2,
+	// 	"StartColumn": 1,
+	// 	"EndColumn": 40,
+	// 	"Match": "https://github.com/brittonhayes/pillager",
+	// 	"Secret": "https://github.com/brittonhayes/pillager",
+	//	"File": "./testdata/package.toml",
+	// 	"Commit": "",
+	// 	"Entropy": 0,
+	// 	"Author": "",
+	// 	"Email": "",
+	// 	"Date": "",
+	// 	"Message": "",
+	// 	"Tags": [
+	// 		"github"
+	// 	],
+	// 	"RuleID": ""
 	// }
 	//
 	// ---
 	// Hooooowl -- 🐕
 	// ---
-	// Line: 1
-	// File: .
+	// Line: 2
+	// File: ./testdata/package.toml
 	// Offender: https://github.com/brittonhayes/pillager
 }
 
 // Hunter will also look personally identifiable info in TOML files and
 // format the output as HTML.
 func ExampleHunter_Hunt_toml() {
-	env, err := HuntTestEnvHelper("~tmp.toml", "fakeperson@example.com")
+	env, err := HuntTestEnvHelper("./testdata/email.toml", "fakeperson@example.com")
 	if err != nil {
 		log.Fatalln(oops.Wrapf(err, "creating test env"))
 	}
-	defer env.cleanup()
 
-	config := config.NewCfg(env.TestFileName, true, config.HTMLFormat, templates.HTML, 1, "", env.Rules)
+	config := config.NewCfg(env.TestFilePath, true, config.HTMLFormat, templates.HTML, 1, "", env.Rules)
 	h := hunter.NewHunter(config)
 
 	if err = h.Hunt(); err != nil {

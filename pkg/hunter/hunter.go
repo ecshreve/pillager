@@ -5,13 +5,10 @@ import (
 
 	"github.com/brittonhayes/pillager/pkg/config"
 	"github.com/samsarahq/go/oops"
-	gitleaks "github.com/zricethezav/gitleaks/v7/config"
-	"github.com/zricethezav/gitleaks/v7/options"
-	"github.com/zricethezav/gitleaks/v7/scan"
+	"github.com/zricethezav/gitleaks/v8/detect"
 )
 
-// Hunter holds the required fields to implement the Hunting interface
-// and utilize the hunter package.
+// Hunter holds configuration and reference to a Hound.
 type Hunter struct {
 	Config *config.Cfg
 	Hound  *Hound
@@ -38,28 +35,18 @@ func (h *Hunter) Hunt() error {
 		h.Hound = NewHound(h.Config.Format, &h.Config.Template)
 	}
 
-	opt := options.Options{
-		Path:    h.Config.BasePath,
+	opt := detect.Options{
 		Verbose: h.Config.Verbose,
-		Threads: h.Config.Workers,
-	}
-	conf := gitleaks.Config{
-		Allowlist: h.Config.Rules.Allowlist,
-		Rules:     h.Config.Rules.Rules,
 	}
 
-	scanner := scan.NewNoGitScanner(opt, conf)
-	if scanner == nil {
-		return oops.Errorf("unable to create scanner")
-	}
-
-	report, err := scanner.Scan()
+	findings, err := detect.FromFiles(h.Config.BasePath, *h.Config.Rules, opt)
 	if err != nil {
-		return oops.Wrapf(err, "unable to scan")
+		return oops.Wrapf(err, "detecting findings")
 	}
 
-	h.Hound.Findings = &report
-	if opt.Verbose {
+	h.Hound.Findings = &Report{Leaks: findings}
+
+	if h.Config.Verbose {
 		h.Hound.Howl()
 	}
 

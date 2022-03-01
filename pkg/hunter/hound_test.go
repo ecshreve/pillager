@@ -3,7 +3,7 @@ package hunter
 import (
 	"github.com/brittonhayes/pillager/pkg/config"
 	"github.com/brittonhayes/pillager/templates"
-	"github.com/zricethezav/gitleaks/v7/scan"
+	"github.com/zricethezav/gitleaks/v8/report"
 )
 
 // Here is an example of utilizing the Howl function on a slice
@@ -13,21 +13,21 @@ import (
 func ExampleHound_Howl_json() {
 	h := NewHound(config.CustomFormat, &templates.Table)
 
-	h.Findings = &scan.Report{
-		Leaks: []scan.Leak{
+	h.Findings = &Report{
+		Leaks: []report.Finding{
 			{
-				Line:       "person@email.com",
-				LineNumber: 16,
-				Offender:   "person@email.com",
-				Rule:       "Email Addresses",
-				File:       "example.txt",
+				Secret:    "person@email.com",
+				StartLine: 16,
+				Match:     "person@email.com",
+				RuleID:    "Email Addresses",
+				File:      "example.txt",
 			},
 			{
-				Line:       "fred@email.com",
-				LineNumber: 29,
-				Offender:   "fred@email.com",
-				Rule:       "Email Addresses",
-				File:       "example2.txt",
+				Secret:    "fred@email.com",
+				StartLine: 29,
+				Match:     "fred@email.com",
+				RuleID:    "Email Addresses",
+				File:      "example2.txt",
 			},
 		},
 	}

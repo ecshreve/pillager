@@ -40,9 +40,10 @@ tasks:
     cmds:
       - go build -v -o bin/pillager .
     sources:
-      - ./*.go
+      - ./**/*.go
     generates:
       - bin/pillager
+    method: checksum
 
   install:
     desc: install executable    

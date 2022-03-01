@@ -11,8 +11,9 @@ import (
 )
 
 func TestParseRules(t *testing.T) {
-	testGitleaksStr := `
+	testRulesStr := `
 	title = "gitleaks rules"
+	
 	[[rules]]
 		description = "email"
 		regex = '''^[A-Z0-9_!#$%&'*+/=?{|}~^.-]+@[A-Z0-9.-]+$'''
@@ -22,7 +23,7 @@ func TestParseRules(t *testing.T) {
 	require.NoError(t, err)
 	defer os.Remove(tmpValidConfig.Name())
 
-	_, err = tmpValidConfig.WriteString(testGitleaksStr)
+	_, err = tmpValidConfig.WriteString(testRulesStr)
 	require.NoError(t, err)
 	err = tmpValidConfig.Close()
 	require.NoError(t, err)

@@ -2,5 +2,5 @@
 # Results
 {{ range .Leaks -}}
     ## {{ .File }}
-    - Location: {{.LineNumber}}
+    - Location: {{.StartLine}}
 {{end}}

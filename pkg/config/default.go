@@ -3,7 +3,7 @@ package config
 // DefaultRules is the default ruleset for pillager's hunting parameters.
 // This can be overridden by providing a rules.toml file as an argument.
 const DefaultRules = `
-title = "pillager config"
+title = "gitleaks rules"
 
 [[rules]]
 	description = "AWS Access Key"
@@ -40,7 +40,7 @@ title = "pillager config"
 // RulesForTest is the string representaton of a basic pillager
 // config file in toml format.
 const RulesForTest = `
-title = "pillager test config"
+title = "gitleaks test rules"
 
 [[rules]]
 	description = "Email"
@@ -59,3 +59,13 @@ title = "pillager test config"
 		'''(.*?)(jpg|gif|doc|pdf|bin|svg|socket)$'''
 	]
 `
+
+// DefaultTemplate is the base template used to format a Report into the
+// custom output format.
+const DefaultTemplate = `{{ with . -}}
+{{ range .Leaks -}}
+Line: {{.StartLine}}
+File: {{ .File }}
+Offender: {{ .Match }}
+
+{{ end -}}{{- end}}`
