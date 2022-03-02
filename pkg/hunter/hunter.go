@@ -1,8 +1,6 @@
 package hunter
 
 import (
-	"log"
-
 	"github.com/brittonhayes/pillager/pkg/config"
 	"github.com/samsarahq/go/oops"
 	"github.com/zricethezav/gitleaks/v8/detect"
@@ -10,45 +8,41 @@ import (
 
 // Hunter holds configuration and reference to a Hound.
 type Hunter struct {
-	Config *config.Cfg
-	Hound  *Hound
+	Config *config.Config
+	Report *Report
 }
 
 // NewHunter creates an instance of the Hunter type from the given Config.
-func NewHunter(c *config.Cfg) *Hunter {
-	if c == nil {
-		conf := config.DefaultCfg()
-		return &Hunter{conf, NewHound(conf.Format, &conf.Template)}
-	}
-
+func NewHunter(c config.Config) (*Hunter, error) {
 	if err := c.Validate(); err != nil {
-		log.Fatalln(oops.Wrapf(err, "invalid Config"))
+		return nil, oops.Wrapf(err, "failed to create new Hunter with invalid config: %+v", c)
 	}
 
-	return &Hunter{c, NewHound(c.Format, &c.Template)}
+	return &Hunter{
+		Config: &c,
+	}, nil
 }
 
 // Hunt walks over the filesystem at the configured path, looking for
-// sensitive information.
+// sensitive information. Checking each file in under the configured path
+// is accomplished with Gitleaks Detect functionality.
 func (h *Hunter) Hunt() error {
-	if h.Hound == nil {
-		h.Hound = NewHound(h.Config.Format, &h.Config.Template)
-	}
-
-	opt := detect.Options{
-		Verbose: h.Config.Verbose,
-	}
-
-	findings, err := detect.FromFiles(h.Config.BasePath, *h.Config.Rules, opt)
+	findings, err := detect.FromFiles(
+		h.Config.BasePath,
+		*h.Config.Rules,
+		detect.Options{
+			Verbose: h.Config.Verbose,
+		},
+	)
 	if err != nil {
-		return oops.Wrapf(err, "detecting findings")
+		return oops.Wrapf(err, "unable to detect findings")
 	}
 
-	h.Hound.Findings = &Report{Leaks: findings}
-
-	if h.Config.Verbose {
-		h.Hound.Howl()
+	if err = h.BuildReport(findings); err != nil {
+		return oops.Wrapf(err, "unable to build report")
 	}
+
+	h.Announce()
 
 	return nil
 }

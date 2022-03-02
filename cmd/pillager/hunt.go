@@ -9,6 +9,7 @@ import (
 
 	"github.com/brittonhayes/pillager/pkg/config"
 	"github.com/brittonhayes/pillager/pkg/hunter"
+	"github.com/samsarahq/go/oops"
 	"github.com/spf13/cobra"
 )
 
@@ -67,17 +68,21 @@ func init() {
 // then creates a Hunter from the Config and executes it's Hunt function.
 func startHunt() func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
-		c := config.NewCfg(
-			args[0],
-			verbose,
-			config.StringToFormat(output),
-			templ,
-			workers,
-			rulesConfig,
-			nil,
-		)
+		cParams := &config.ConfigParams{
+			BasePath:  args[0],
+			RulesPath: rulesConfig,
+			Format:    config.StringToFormat(output),
+			Verbose:   verbose,
+			Template:  templ,
+			Workers:   workers,
+		}
 
-		h := hunter.NewHunter(c)
+		c, err := config.NewConfig(*cParams)
+		if err != nil {
+			return oops.Wrapf(err, "creating config")
+		}
+
+		h, _ := hunter.NewHunter(*c)
 		return h.Hunt()
 	}
 }

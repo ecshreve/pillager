@@ -2,6 +2,7 @@ package config_test
 
 import (
 	"testing"
+	"text/template"
 
 	"github.com/brittonhayes/pillager/pkg/config"
 	"github.com/stretchr/testify/assert"
@@ -11,37 +12,32 @@ import (
 func TestValidate(t *testing.T) {
 	testcases := []struct {
 		desc        string
-		cfg         *config.Cfg
+		cfg         *config.Config
 		errExpected bool
 	}{
 		{
 			desc:        "valid path",
-			cfg:         &config.Cfg{".", false, 1, 1, "", "", &gitleaks.Config{Rules: []*gitleaks.Rule{{Description: "test"}}}},
+			cfg:         &config.Config{".", 1, false, 1, &template.Template{}, &gitleaks.Config{Rules: []*gitleaks.Rule{{Description: "test"}}}},
 			errExpected: false,
 		},
 		{
 			desc:        "invalid path",
-			cfg:         &config.Cfg{"adsfasd", false, 1, 1, "", "", &gitleaks.Config{Rules: []*gitleaks.Rule{{Description: "test"}}}},
+			cfg:         &config.Config{"asdfa", 1, false, 1, &template.Template{}, &gitleaks.Config{Rules: []*gitleaks.Rule{{Description: "test"}}}},
 			errExpected: true,
 		},
 		{
 			desc:        "invalid format",
-			cfg:         &config.Cfg{".", false, 1, 7777, "", "", &gitleaks.Config{Rules: []*gitleaks.Rule{{Description: "test"}}}},
+			cfg:         &config.Config{".", 777, false, 1, &template.Template{}, &gitleaks.Config{Rules: []*gitleaks.Rule{{Description: "test"}}}},
 			errExpected: true,
 		},
 		{
 			desc:        "invalid workers",
-			cfg:         &config.Cfg{".", false, 777, 1, "", "", &gitleaks.Config{Rules: []*gitleaks.Rule{{Description: "test"}}}},
+			cfg:         &config.Config{".", 1, false, 777, &template.Template{}, &gitleaks.Config{Rules: []*gitleaks.Rule{{Description: "test"}}}},
 			errExpected: true,
 		},
 		{
 			desc:        "invalid rules",
-			cfg:         &config.Cfg{".", false, 1, 1, "", "", nil},
-			errExpected: true,
-		},
-		{
-			desc:        "invalid nested rule",
-			cfg:         &config.Cfg{".", false, 1, 1, "", "", &gitleaks.Config{}},
+			cfg:         &config.Config{".", 1, false, 1, &template.Template{}, nil},
 			errExpected: true,
 		},
 	}

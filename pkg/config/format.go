@@ -1,6 +1,10 @@
 package config
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/brittonhayes/pillager/templates"
+)
 
 // Format represents a possible output format for a Hound's findings.
 type Format int
@@ -15,6 +19,15 @@ const (
 	MarkdownFormat
 	CustomFormat
 )
+
+var FormatToTemplate = map[Format]string{
+	JSONFormat:      templates.ParsedString,
+	YAMLFormat:      templates.ParsedString,
+	TableFormat:     templates.Table,
+	HTMLFormat:      templates.HTML,
+	HTMLTableFormat: templates.HTMLTable,
+	MarkdownFormat:  templates.Markdown,
+}
 
 // IsValid is a helper method to check the Format is one of the valid values.
 func (f Format) IsValid() bool {

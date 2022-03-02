@@ -2,12 +2,44 @@ package hunter_test
 
 import (
 	"log"
+	"testing"
 
 	"github.com/brittonhayes/pillager/pkg/config"
 	"github.com/brittonhayes/pillager/pkg/hunter"
 	"github.com/brittonhayes/pillager/templates"
 	"github.com/samsarahq/go/oops"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func TestNewHunter(t *testing.T) {
+	// Basic Hunter creation works.
+	hValid, err := hunter.NewHunter(ValidConfigForTest)
+	assert.NoError(t, err)
+	assert.NotNil(t, hValid)
+
+	// Attempting to create a Hunter with invalid Config fails.
+	hInvalid, err := hunter.NewHunter(InvalidConfigForTest)
+	assert.Error(t, err)
+	assert.Nil(t, hInvalid)
+}
+
+func TestHunt(t *testing.T) {
+	// Basic Hunter for test.
+	hunterForTest, err := hunter.NewHunter(ValidConfigForTest)
+	require.NoError(t, err)
+	require.NotNil(t, hunterForTest)
+
+	// Hunt with valid Hunter works.
+	err = hunterForTest.Hunt()
+	assert.NoError(t, err)
+
+	// Hunt with invalid Config returns error.
+	hunterForTest.Config.BasePath = "asdfasdf"
+	err = hunterForTest.Hunt()
+	assert.Error(t, err)
+	hunterForTest.Config.BasePath = "."
+}
 
 // This is an example of how to run a scan on a single file to look for
 // email addresses.
@@ -17,8 +49,8 @@ func ExampleHunter_Hunt_simple() {
 		log.Fatalln(oops.Wrapf(err, "creating test env"))
 	}
 
-	config := config.NewCfg("./testdata/email.toml", true, config.JSONFormat, config.DefaultTemplate, 1, "", env.Rules)
-	h := hunter.NewHunter(config)
+	cfg, _ := NewTestConfig(env.TestFilePath, config.JSONFormat, templates.ParsedString)
+	h, _ := hunter.NewHunter(*cfg)
 
 	if err = h.Hunt(); err != nil {
 		log.Fatalln(oops.Wrapf(err, "failure to Hunt"))
@@ -45,11 +77,10 @@ func ExampleHunter_Hunt_simple() {
 	// 	],
 	// 	"RuleID": ""
 	// }
-	//
-	// ---
-	// Hooooowl -- 🐕
+	// --- Results ---
 	// ---
 	// [{"Description":"Email","StartLine":2,"EndLine":2,"StartColumn":1,"EndColumn":17,"Match":"example@email.com","Secret":"example@email.com","File":"./testdata/email.toml","Commit":"","Entropy":0,"Author":"","Email":"","Date":"","Message":"","Tags":["email"],"RuleID":""}]
+	//
 }
 
 // This method also accepts custom output format configuration
@@ -61,8 +92,8 @@ func ExampleHunter_Hunt_template() {
 		log.Fatalln(oops.Wrapf(err, "creating test env"))
 	}
 
-	config := config.NewCfg("./testdata/package.toml", true, config.CustomFormat, config.DefaultTemplate, 1, "", env.Rules)
-	h := hunter.NewHunter(config)
+	cfg, _ := NewTestConfig(env.TestFilePath, config.CustomFormat, config.DefaultTemplate)
+	h, _ := hunter.NewHunter(*cfg)
 
 	if err = h.Hunt(); err != nil {
 		log.Fatalln(oops.Wrapf(err, "failure to Hunt"))
@@ -89,9 +120,7 @@ func ExampleHunter_Hunt_template() {
 	// 	],
 	// 	"RuleID": ""
 	// }
-	//
-	// ---
-	// Hooooowl -- 🐕
+	// --- Results ---
 	// ---
 	// Line: 2
 	// File: ./testdata/package.toml
@@ -106,8 +135,8 @@ func ExampleHunter_Hunt_toml() {
 		log.Fatalln(oops.Wrapf(err, "creating test env"))
 	}
 
-	config := config.NewCfg(env.TestFilePath, true, config.HTMLFormat, templates.HTML, 1, "", env.Rules)
-	h := hunter.NewHunter(config)
+	config, _ := NewTestConfig(env.TestFileContent, config.HTMLFormat, templates.HTML)
+	h, _ := hunter.NewHunter(*config)
 
 	if err = h.Hunt(); err != nil {
 		log.Fatalln(oops.Wrapf(err, "failure to Hunt"))

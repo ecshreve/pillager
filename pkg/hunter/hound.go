@@ -4,92 +4,77 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
-	"log"
-	"text/template"
 
 	"github.com/brittonhayes/pillager/pkg/config"
-	"github.com/brittonhayes/pillager/templates"
 	"github.com/samsarahq/go/oops"
 	"github.com/zricethezav/gitleaks/v8/report"
 	"gopkg.in/yaml.v2"
 )
 
+type Leak report.Finding
+
+// Report includes data related to the results of a Gitleaks Detect.
 type Report struct {
-	Leaks []report.Finding
+	Leaks        []Leak
+	SimpleString string
 }
 
-// A Hound performs file inspection and collects the results.
-type Hound struct {
-	OutputFormat   config.Format
-	CustomTemplate *string
-	Findings       *Report `json:"findings"`
-}
-
-// NewHound creates an instance of the Hound type from the given Config.
-func NewHound(f config.Format, t *string) *Hound {
-	if f == config.CustomFormat && t == nil {
-		log.Fatalln(oops.Errorf("invalid parameters for creating Hound"))
+func (h *Hunter) BuildReport(findings []report.Finding) error {
+	var leaks []Leak
+	for _, f := range findings {
+		leaks = append(leaks, Leak(f))
+	}
+	rep := &Report{
+		Leaks: leaks,
 	}
 
-	return &Hound{f, t, &Report{}}
-}
-
-// Howl prints out the findings from the Hound in the configured output format.
-func (h *Hound) Howl() {
-	fmt.Println("\n---\nHooooowl -- 🐕\n---")
-	out := BuildOutputString(h.OutputFormat, h.CustomTemplate, *h.Findings)
-	fmt.Println(out)
-}
-
-// RenderTemplate renders a Hound finding in a custom go template format to
-// the provided writer.
-func RenderTemplate(w io.Writer, tpl string, r Report) {
-	t, err := template.New("custom").Parse(tpl)
-	if err != nil {
-		log.Fatalln(oops.Wrapf(err, "failed to parse template"))
+	if h.Config.Format == config.JSONFormat || h.Config.Format == config.YAMLFormat {
+		simpleString, err := stringOutputHelper(h.Config.Format, leaks)
+		if err != nil {
+			return oops.Wrapf(err, "failed to build simple string for report")
+		}
+		rep.SimpleString = simpleString
 	}
 
-	if err := t.Execute(w, r); err != nil {
-		log.Fatalln(oops.Wrapf(err, "failed to use custom template"))
-	}
+	h.Report = rep
+	return nil
 }
 
-// BuildOutputString returns the string result of applying the given template and
-// format to the data in the report.
-func BuildOutputString(f config.Format, tmp *string, rep Report) string {
+// Announce handles outputting a Hunter's Report.
+func (h *Hunter) Announce() error {
+	if !h.Config.Verbose {
+		return nil
+	}
+
 	var buf bytes.Buffer
-
-	switch f {
-	case config.JSONFormat:
-		b, err := json.Marshal(&rep.Leaks)
-		if err != nil {
-			log.Fatal(oops.Wrapf(err, "unmarshal findings from json"))
-		}
-		return string(b)
-	case config.YAMLFormat:
-		b, err := yaml.Marshal(&rep.Leaks)
-		if err != nil {
-			log.Fatal(oops.Wrapf(err, "unmarshal findings from yaml"))
-		}
-		return string(b)
-	case config.HTMLFormat:
-		RenderTemplate(&buf, templates.HTML, rep)
-	case config.HTMLTableFormat:
-		RenderTemplate(&buf, templates.HTMLTable, rep)
-	case config.MarkdownFormat:
-		RenderTemplate(&buf, templates.Markdown, rep)
-	case config.TableFormat:
-		RenderTemplate(&buf, templates.Table, rep)
-	case config.CustomFormat:
-		if tmp == nil {
-			log.Fatalln(oops.Errorf("unable to build output string for CustomFormat with nil CustomTemplate"))
-		}
-		RenderTemplate(&buf, *tmp, rep)
-	default:
-		RenderTemplate(&buf, templates.Simple, rep)
-
+	if err := h.Config.Template.Execute(&buf, h.Report); err != nil {
+		return oops.Wrapf(err, "failed to use custom template")
 	}
 
-	return buf.String()
+	fmt.Printf("--- Results ---\n---\n")
+	fmt.Println(buf.String())
+
+	return nil
+}
+
+func stringOutputHelper(f config.Format, leaks []Leak) (string, error) {
+	var (
+		buf []byte
+		err error
+	)
+
+	if f == config.JSONFormat {
+		buf, err = json.Marshal(&leaks)
+	} else if f == config.YAMLFormat {
+		buf, err = yaml.Marshal(&leaks)
+	} else {
+		return "", oops.Errorf("invalid format for string output")
+	}
+
+	// Encountered an error unmarshalling data.
+	if err != nil {
+		return "", oops.Wrapf(err, "failed to unmarshal format: %s", f.String())
+	}
+
+	return string(buf), nil
 }

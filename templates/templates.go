@@ -22,4 +22,6 @@ var (
 
 	//go:embed html-table.tmpl
 	HTMLTable string
+
+	ParsedString = "{{.SimpleString}}"
 )

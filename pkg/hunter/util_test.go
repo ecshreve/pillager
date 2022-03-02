@@ -1,6 +1,8 @@
 package hunter_test
 
 import (
+	"text/template"
+
 	"github.com/BurntSushi/toml"
 	"github.com/brittonhayes/pillager/pkg/config"
 	"github.com/samsarahq/go/oops"
@@ -43,4 +45,43 @@ func GetRulesForTest() (*gitleaks.Config, error) {
 	}
 
 	return &config, nil
+}
+
+func NewTestConfig(path string, f config.Format, t string) (*config.Config, error) {
+	parsedRules, err := GetRulesForTest()
+	if err != nil {
+		return nil, oops.Wrapf(err, "failed to parse rules file")
+	}
+
+	parsedTemplate, err := template.New("out-template").Parse(t)
+	if err != nil {
+		return nil, oops.Wrapf(err, "failed to create parsed template")
+	}
+
+	return &config.Config{
+		BasePath: path,
+		Format:   f,
+		Verbose:  true,
+		Workers:  1,
+		Template: parsedTemplate,
+		Rules:    parsedRules,
+	}, nil
+}
+
+var ValidConfigForTest = config.Config{
+	BasePath: ".",
+	Format:   config.JSONFormat,
+	Verbose:  false,
+	Workers:  1,
+	Template: nil,
+	Rules:    &gitleaks.Config{Rules: []*gitleaks.Rule{}},
+}
+
+var InvalidConfigForTest = config.Config{
+	BasePath: "asdfasd",
+	Format:   config.JSONFormat,
+	Verbose:  false,
+	Workers:  1,
+	Template: nil,
+	Rules:    &gitleaks.Config{Rules: []*gitleaks.Rule{}},
 }

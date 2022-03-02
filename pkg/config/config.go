@@ -3,58 +3,83 @@ package config
 import (
 	"log"
 	"os"
+	"text/template"
 
 	"github.com/BurntSushi/toml"
 	"github.com/samsarahq/go/oops"
 	gitleaks "github.com/zricethezav/gitleaks/v8/config"
 )
 
-// Cfg holds all the configurable parameters for a Hunter.
-type Cfg struct {
-	BasePath string
-	Verbose  bool
-	Workers  int
-	Format   Format
-	Template string
-
+type ConfigParams struct {
+	BasePath  string
 	RulesPath string
-	Rules     *gitleaks.Config
+	Format    Format
+	Verbose   bool
+	Workers   int
+	Template  string
 }
 
-// NewCfg validates the given path and returns a new Config.
-func NewCfg(path string, verbose bool, format Format, template string, workers int, rulesPath string, rules *gitleaks.Config) *Cfg {
-	if rules == nil {
-		parsedRules, err := ParseRules(rulesPath)
-		if err != nil {
-			log.Fatalln(oops.Wrapf(err, "parsing default pillager config file"))
-		}
-		rules = parsedRules
+// Config holds parameters used by a Hunter.
+type Config struct {
+	BasePath string
+
+	Format  Format
+	Verbose bool
+	Workers int
+
+	Template *template.Template
+	Rules    *gitleaks.Config
+}
+
+// NewConfig validates the given path and returns a new Config.
+func NewConfig(p ConfigParams) (*Config, error) {
+	parsedRules, err := ParseRules(p.RulesPath)
+	if err != nil {
+		return nil, oops.Wrapf(err, "failed to parse rules file")
 	}
 
-	c := &Cfg{
-		BasePath:  path,
-		Verbose:   verbose,
-		Format:    format,
-		Template:  template,
-		Workers:   workers,
-		RulesPath: rulesPath,
-		Rules:     rules,
+	parsedTemplate, err := template.New("out-template").Parse(p.Template)
+	if err != nil {
+		return nil, oops.Wrapf(err, "failed to create parsed template")
+	}
+
+	c := &Config{
+		BasePath: p.BasePath,
+		Format:   p.Format,
+		Verbose:  p.Verbose,
+		Workers:  p.Workers,
+		Template: parsedTemplate,
+		Rules:    parsedRules,
 	}
 
 	if err := c.Validate(); err != nil {
-		log.Fatalln(oops.Wrapf(err, "unable to validate config: %v", c))
+		return nil, oops.Wrapf(err, "unable to validate config: %v from params: %v", c, p)
 	}
 
-	return c
+	return c, nil
 }
 
-// DefaultCfg returns a Cfg with default values for the Hunter.
-func DefaultCfg() *Cfg {
-	return NewCfg("", false, JSONFormat, "", 1, "", nil)
+// DefaultConfig returns a Cfg with default values for the Hunter.
+func DefaultConfig() *Config {
+	defaultConfigParams := &ConfigParams{
+		BasePath:  "",
+		RulesPath: "",
+		Verbose:   false,
+		Format:    JSONFormat,
+		Template:  "",
+		Workers:   1,
+	}
+
+	defaultConfig, err := NewConfig(*defaultConfigParams)
+	if err != nil {
+		log.Fatalln(oops.Wrapf(err, "failed to create default config"))
+	}
+
+	return defaultConfig
 }
 
 // Validate returns an error if the given Config doesn't have valid field values.
-func (c *Cfg) Validate() error {
+func (c *Config) Validate() error {
 	if _, err := os.Stat(c.BasePath); err != nil {
 		return oops.Errorf("path does not exist")
 	}
@@ -67,8 +92,8 @@ func (c *Cfg) Validate() error {
 		return oops.Errorf("number of workers out of bounds")
 	}
 
-	if c.Rules == nil || c.Rules.Rules == nil {
-		return oops.Errorf("no gitleaks rules provided")
+	if c.Rules == nil {
+		return oops.Errorf("no gitleaks rules")
 	}
 
 	return nil
