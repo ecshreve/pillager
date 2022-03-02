@@ -64,7 +64,7 @@ tasks:
     desc: run the executable
     cmds:
       - task: build
-      - bin/pillager
+      - ./bin/pillager
 
   docs:gen:
     desc: generate documentation via gomarkdocwn
