@@ -11,13 +11,15 @@ Package config contains the types\, methods\, and interfaces related to configur
 ## Index
 
 - [Constants](<#constants>)
+- [Variables](<#variables>)
 - [func ParseRules(filepath string) (*gitleaks.Config, error)](<#func-parserules>)
-- [type Cfg](<#type-cfg>)
-  - [func DefaultCfg() *Cfg](<#func-defaultcfg>)
-  - [func NewCfg(path string, verbose bool, format Format, template string, workers int, rulesPath string, rules *gitleaks.Config) *Cfg](<#func-newcfg>)
-  - [func (c *Cfg) Validate() error](<#func-cfg-validate>)
+- [type Config](<#type-config>)
+  - [func NewConfig(p ConfigParams) (*Config, error)](<#func-newconfig>)
+  - [func (c *Config) Validate() error](<#func-config-validate>)
+- [type ConfigParams](<#type-configparams>)
 - [type Format](<#type-format>)
   - [func StringToFormat(s string) Format](<#func-stringtoformat>)
+  - [func (f Format) IsValid() bool](<#func-format-isvalid>)
   - [func (f Format) String() string](<#func-format-string>)
 
 
@@ -74,32 +76,23 @@ Offender: {{ .Match }}
 {{ end -}}{{- end}}`
 ```
 
-RulesForTest is the string representaton of a basic pillager config file in toml format\.
+## Variables
+
+FormatToTemplate is a Map of Format to the default output template string\.
 
 ```go
-const RulesForTest = `
-title = "gitleaks test rules"
-
-[[rules]]
-	description = "Email"
-	regex = '''[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}'''
-	tags = ["email"]
-
-[[rules]]
-	description = "Github"
-	regex = '''^.*github.*$'''
-	tags = ["github"]
-
-[allowlist]
-	description = "global allow list"
-	paths = [
-		'''gitleaks.toml''',
-		'''(.*?)(jpg|gif|doc|pdf|bin|svg|socket)$'''
-	]
-`
+var FormatToTemplate = map[Format]string{
+    JSONFormat:      templates.JSON,
+    YAMLFormat:      templates.YAML,
+    TableFormat:     templates.Table,
+    HTMLFormat:      templates.HTML,
+    HTMLTableFormat: templates.HTMLTable,
+    MarkdownFormat:  templates.Markdown,
+    CustomFormat:    templates.Simple,
+}
 ```
 
-## func [ParseRules](<https://github.com/brittonhayes/pillager/blob/main/pkg/config/config.go#L67>)
+## func [ParseRules](<https://github.com/brittonhayes/pillager/blob/main/pkg/config/config.go#L95>)
 
 ```go
 func ParseRules(filepath string) (*gitleaks.Config, error)
@@ -107,56 +100,63 @@ func ParseRules(filepath string) (*gitleaks.Config, error)
 
 ParseRules loads the rules defined in the rules\.toml file into a list of gitleaks rules\.
 
-## type [Cfg](<https://github.com/brittonhayes/pillager/blob/main/pkg/config/config.go#L13-L22>)
+## type [Config](<https://github.com/brittonhayes/pillager/blob/main/pkg/config/config.go#L24-L33>)
 
-Cfg holds all the configurable parameters for a Hunter\.
+Config holds parameters used by a Hunter\.
 
 ```go
-type Cfg struct {
+type Config struct {
     BasePath string
-    Verbose  bool
-    Workers  int
-    Format   Format
-    Template string
 
-    RulesPath string
-    Rules     *gitleaks.Config
+    Format  Format
+    Verbose bool
+    Workers int
+
+    Template *template.Template
+    Rules    *gitleaks.Config
 }
 ```
 
-### func [DefaultCfg](<https://github.com/brittonhayes/pillager/blob/main/pkg/config/config.go#L46>)
+### func [NewConfig](<https://github.com/brittonhayes/pillager/blob/main/pkg/config/config.go#L36>)
 
 ```go
-func DefaultCfg() *Cfg
+func NewConfig(p ConfigParams) (*Config, error)
 ```
 
-DefaultCfg returns a Cfg with default values for the Hunter\.
+NewConfig validates the given path and returns a new Config\.
 
-### func [NewCfg](<https://github.com/brittonhayes/pillager/blob/main/pkg/config/config.go#L25>)
+### func \(\*Config\) [Validate](<https://github.com/brittonhayes/pillager/blob/main/pkg/config/config.go#L69>)
 
 ```go
-func NewCfg(path string, verbose bool, format Format, template string, workers int, rulesPath string, rules *gitleaks.Config) *Cfg
+func (c *Config) Validate() error
 ```
 
-NewCfg validates the given path and returns a new Config\.
+Validate returns an error if the given Config doesn't have valid field values\.
 
-### func \(\*Cfg\) [Validate](<https://github.com/brittonhayes/pillager/blob/main/pkg/config/config.go#L51>)
+## type [ConfigParams](<https://github.com/brittonhayes/pillager/blob/main/pkg/config/config.go#L14-L21>)
+
+ConfigParams represents the necessary structure needed to create a Config\.
 
 ```go
-func (c *Cfg) Validate() error
+type ConfigParams struct {
+    BasePath  string
+    RulesPath string
+    Format    Format
+    Verbose   bool
+    Workers   int
+    Template  string
+}
 ```
 
-Validate returns an error if the given Config does not have Rules defined\.
+## type [Format](<https://github.com/brittonhayes/pillager/blob/main/pkg/config/format.go#L10>)
 
-## type [Format](<https://github.com/brittonhayes/pillager/blob/main/pkg/config/format.go#L6>)
-
-Format represents a possible output format for a Hound's findings\.
+Format represents a possible output format for a Report\.
 
 ```go
 type Format int
 ```
 
-All possible output formats for a Hound\.
+All possible output formats for a Report\.
 
 ```go
 const (
@@ -170,7 +170,7 @@ const (
 )
 ```
 
-### func [StringToFormat](<https://github.com/brittonhayes/pillager/blob/main/pkg/config/format.go#L26>)
+### func [StringToFormat](<https://github.com/brittonhayes/pillager/blob/main/pkg/config/format.go#L50>)
 
 ```go
 func StringToFormat(s string) Format
@@ -178,7 +178,15 @@ func StringToFormat(s string) Format
 
 StringToFormat takes in a string representing the preferred output format\, and returns the associated Format enum value\.
 
-### func \(Format\) [String](<https://github.com/brittonhayes/pillager/blob/main/pkg/config/format.go#L20>)
+### func \(Format\) [IsValid](<https://github.com/brittonhayes/pillager/blob/main/pkg/config/format.go#L35>)
+
+```go
+func (f Format) IsValid() bool
+```
+
+IsValid is a helper method to check the Format is one of the valid values\.
+
+### func \(Format\) [String](<https://github.com/brittonhayes/pillager/blob/main/pkg/config/format.go#L44>)
 
 ```go
 func (f Format) String() string

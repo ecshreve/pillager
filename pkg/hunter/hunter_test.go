@@ -49,7 +49,7 @@ func ExampleHunter_Hunt_simple() {
 		log.Fatalln(oops.Wrapf(err, "creating test env"))
 	}
 
-	cfg, _ := NewTestConfig(env.TestFilePath, config.JSONFormat, templates.ParsedString)
+	cfg, _ := NewTestConfig(env.TestFilePath, config.JSONFormat, templates.JSON)
 	h, _ := hunter.NewHunter(*cfg)
 
 	if err = h.Hunt(); err != nil {

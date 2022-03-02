@@ -6,7 +6,7 @@ import (
 	"github.com/zricethezav/gitleaks/v8/detect"
 )
 
-// Hunter holds configuration and reference to a Hound.
+// Hunter holds configuration and results.
 type Hunter struct {
 	Config *config.Config
 	Report *Report
@@ -24,25 +24,22 @@ func NewHunter(c config.Config) (*Hunter, error) {
 }
 
 // Hunt walks over the filesystem at the configured path, looking for
-// sensitive information. Checking each file in under the configured path
+// sensitive information. Checking each file under the configured path
 // is accomplished with Gitleaks Detect functionality.
 func (h *Hunter) Hunt() error {
-	findings, err := detect.FromFiles(
-		h.Config.BasePath,
-		*h.Config.Rules,
-		detect.Options{
-			Verbose: h.Config.Verbose,
-		},
-	)
+	detectOptions := detect.Options{Verbose: h.Config.Verbose}
+	findings, err := detect.FromFiles(h.Config.BasePath, *h.Config.Rules, detectOptions)
 	if err != nil {
-		return oops.Wrapf(err, "unable to detect findings")
+		return oops.Wrapf(err, "unable to detect findings with gitleaks")
 	}
 
 	if err = h.BuildReport(findings); err != nil {
 		return oops.Wrapf(err, "unable to build report")
 	}
 
-	h.Announce()
+	if err := h.Announce(); err != nil {
+		return oops.Wrapf(err, "unable to announce report")
+	}
 
 	return nil
 }

@@ -82,7 +82,11 @@ func startHunt() func(cmd *cobra.Command, args []string) error {
 			return oops.Wrapf(err, "creating config")
 		}
 
-		h, _ := hunter.NewHunter(*c)
+		h, err := hunter.NewHunter(*c)
+		if err != nil {
+			return oops.Wrapf(err, "creating hunter")
+		}
+
 		return h.Hunt()
 	}
 }

@@ -10,72 +10,61 @@ Package hunter contains the types\, methods\, and interfaces for the file huntin
 
 ## Index
 
-- [func BuildOutputString(f config.Format, tmp *string, rep Report) string](<#func-buildoutputstring>)
-- [func RenderTemplate(w io.Writer, tpl string, r Report)](<#func-rendertemplate>)
-- [type Hound](<#type-hound>)
-  - [func NewHound(f config.Format, t *string) *Hound](<#func-newhound>)
-  - [func (h *Hound) Howl()](<#func-hound-howl>)
 - [type Hunter](<#type-hunter>)
-  - [func NewHunter(c *config.Cfg) *Hunter](<#func-newhunter>)
+  - [func NewHunter(c config.Config) (*Hunter, error)](<#func-newhunter>)
+  - [func (h *Hunter) Announce() error](<#func-hunter-announce>)
+  - [func (h *Hunter) BuildReport(findings []report.Finding) error](<#func-hunter-buildreport>)
   - [func (h *Hunter) Hunt() error](<#func-hunter-hunt>)
+- [type Leak](<#type-leak>)
 - [type Report](<#type-report>)
 
 
-## func [BuildOutputString](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L60>)
+## type [Hunter](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hunter.go#L10-L13>)
+
+Hunter holds configuration and results\.
 
 ```go
-func BuildOutputString(f config.Format, tmp *string, rep Report) string
-```
-
-BuildOutputString returns the string result of applying the given template and format to the data in the report\.
-
-## func [RenderTemplate](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L47>)
-
-```go
-func RenderTemplate(w io.Writer, tpl string, r Report)
-```
-
-RenderTemplate renders a Hound finding in a custom go template format to the provided writer\.
-
-## type [Hound](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L23-L27>)
-
-A Hound performs file inspection and collects the results\.
-
-```go
-type Hound struct {
-    OutputFormat   config.Format
-    CustomTemplate *string
-    Findings       *Report `json:"findings"`
+type Hunter struct {
+    Config *config.Config
+    Report *Report
 }
 ```
 
-### func [NewHound](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L30>)
+### func [NewHunter](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hunter.go#L16>)
 
 ```go
-func NewHound(f config.Format, t *string) *Hound
+func NewHunter(c config.Config) (*Hunter, error)
 ```
 
-NewHound creates an instance of the Hound type from the given Config\.
+NewHunter creates an instance of the Hunter type from the given Config\.
 
-### func \(\*Hound\) [Howl](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L39>)
+### func \(\*Hunter\) [Announce](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/report.go#L44>)
 
 ```go
-func (h *Hound) Howl()
+func (h *Hunter) Announce() error
 ```
 
-Howl prints out the findings from the Hound in the configured output format\.
+Announce handles outputting a Hunter's Report to stdout\.
 
-<details><summary>Example (Json)</summary>
+<details><summary>Example (Table)</summary>
 <p>
 
-Here is an example of utilizing the Howl function on a slice of findings\. The Howl method is the final method in the hunting process\. It takes whatever has been found and outputs it for the user\.
+Here is an example of utilizing the Announce function on a Report\. The Announce method is the final method in the hunting process\. It takes whatever has been found and outputs it for the user\.
 
 ```go
 {
-	h := NewHound(config.CustomFormat, &templates.Table)
+	cfg, err := NewTestConfig(".", config.TableFormat, templates.Table)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
-	h.Findings = &Report{
-		Leaks: []report.Finding{
+	h, err := hunter.NewHunter(*cfg)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	h.Report = &hunter.Report{
+		Leaks: []hunter.Leak{
 			{
 				Secret:    "person@email.com",
 				StartLine: 16,
@@ -93,7 +82,10 @@ Here is an example of utilizing the Howl function on a slice of findings\. The H
 		},
 	}
 
-	h.Howl()
+	err = h.Announce()
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 }
 ```
@@ -101,8 +93,7 @@ Here is an example of utilizing the Howl function on a slice of findings\. The H
 #### Output
 
 ```
----
-Hooooowl -- 🐕
+--- Results ---
 ---
 | File    |  Line    | Offender |
 | --------| ---------| -------- |
@@ -113,32 +104,19 @@ Hooooowl -- 🐕
 </p>
 </details>
 
-## type [Hunter](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hunter.go#L12-L15>)
-
-Hunter holds configuration and reference to a Hound\.
+### func \(\*Hunter\) [BuildReport](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/report.go#L22>)
 
 ```go
-type Hunter struct {
-    Config *config.Cfg
-    Hound  *Hound
-}
+func (h *Hunter) BuildReport(findings []report.Finding) error
 ```
 
-### func [NewHunter](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hunter.go#L18>)
-
-```go
-func NewHunter(c *config.Cfg) *Hunter
-```
-
-NewHunter creates an instance of the Hunter type from the given Config\.
-
-### func \(\*Hunter\) [Hunt](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hunter.go#L33>)
+### func \(\*Hunter\) [Hunt](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hunter.go#L29>)
 
 ```go
 func (h *Hunter) Hunt() error
 ```
 
-Hunt walks over the filesystem at the configured path\, looking for sensitive information\.
+Hunt walks over the filesystem at the configured path\, looking for sensitive information\. Checking each file under the configured path is accomplished with Gitleaks Detect functionality\.
 
 <details><summary>Example (Simple)</summary>
 <p>
@@ -152,8 +130,8 @@ This is an example of how to run a scan on a single file to look for email addre
 		log.Fatalln(oops.Wrapf(err, "creating test env"))
 	}
 
-	config := config.NewCfg("./testdata/email.toml", true, config.JSONFormat, config.DefaultTemplate, 1, "", env.Rules)
-	h := hunter.NewHunter(config)
+	cfg, _ := NewTestConfig(env.TestFilePath, config.JSONFormat, templates.JSON)
+	h, _ := hunter.NewHunter(*cfg)
 
 	if err = h.Hunt(); err != nil {
 		log.Fatalln(oops.Wrapf(err, "failure to Hunt"))
@@ -185,9 +163,7 @@ This is an example of how to run a scan on a single file to look for email addre
 	],
 	"RuleID": ""
 }
-
----
-Hooooowl -- 🐕
+--- Results ---
 ---
 [{"Description":"Email","StartLine":2,"EndLine":2,"StartColumn":1,"EndColumn":17,"Match":"example@email.com","Secret":"example@email.com","File":"./testdata/email.toml","Commit":"","Entropy":0,"Author":"","Email":"","Date":"","Message":"","Tags":["email"],"RuleID":""}]
 ```
@@ -207,8 +183,8 @@ This method also accepts custom output format configuration using go template/ht
 		log.Fatalln(oops.Wrapf(err, "creating test env"))
 	}
 
-	config := config.NewCfg("./testdata/package.toml", true, config.CustomFormat, config.DefaultTemplate, 1, "", env.Rules)
-	h := hunter.NewHunter(config)
+	cfg, _ := NewTestConfig(env.TestFilePath, config.CustomFormat, config.DefaultTemplate)
+	h, _ := hunter.NewHunter(*cfg)
 
 	if err = h.Hunt(); err != nil {
 		log.Fatalln(oops.Wrapf(err, "failure to Hunt"))
@@ -240,9 +216,7 @@ This method also accepts custom output format configuration using go template/ht
 	],
 	"RuleID": ""
 }
-
----
-Hooooowl -- 🐕
+--- Results ---
 ---
 Line: 2
 File: ./testdata/package.toml
@@ -264,8 +238,8 @@ Hunter will also look personally identifiable info in TOML files and format the 
 		log.Fatalln(oops.Wrapf(err, "creating test env"))
 	}
 
-	config := config.NewCfg(env.TestFilePath, true, config.HTMLFormat, templates.HTML, 1, "", env.Rules)
-	h := hunter.NewHunter(config)
+	config, _ := NewTestConfig(env.TestFileContent, config.HTMLFormat, templates.HTML)
+	h, _ := hunter.NewHunter(*config)
 
 	if err = h.Hunt(); err != nil {
 		log.Fatalln(oops.Wrapf(err, "failure to Hunt"))
@@ -276,11 +250,20 @@ Hunter will also look personally identifiable info in TOML files and format the 
 </p>
 </details>
 
-## type [Report](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/hound.go#L18-L20>)
+## type [Leak](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/report.go#L14>)
+
+```go
+type Leak report.Finding
+```
+
+## type [Report](<https://github.com/brittonhayes/pillager/blob/main/pkg/hunter/report.go#L17-L20>)
+
+Report includes data related to the results of a Gitleaks Detect\.
 
 ```go
 type Report struct {
-    Leaks []report.Finding
+    Leaks        []Leak
+    SimpleString string
 }
 ```
 

@@ -9,6 +9,21 @@ import (
 	gitleaks "github.com/zricethezav/gitleaks/v8/config"
 )
 
+func TestNewConfig(t *testing.T) {
+	p := config.ConfigParams{
+		BasePath:  ".",
+		RulesPath: "",
+		Format:    config.StringToFormat("json"),
+		Verbose:   false,
+		Template:  "",
+		Workers:   1,
+	}
+
+	cfg, err := config.NewConfig(p)
+	assert.NoError(t, err)
+	assert.NotNil(t, cfg)
+}
+
 func TestValidate(t *testing.T) {
 	testcases := []struct {
 		desc        string

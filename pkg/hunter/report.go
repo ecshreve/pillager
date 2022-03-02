@@ -19,7 +19,7 @@ type Report struct {
 	SimpleString string
 }
 
-func (h *Hunter) BuildReport(findings []report.Finding) error {
+func (h *Hunter) buildReport(findings []report.Finding) error {
 	var leaks []Leak
 	for _, f := range findings {
 		leaks = append(leaks, Leak(f))
@@ -40,7 +40,7 @@ func (h *Hunter) BuildReport(findings []report.Finding) error {
 	return nil
 }
 
-// Announce handles outputting a Hunter's Report.
+// Announce handles outputting a Hunter's Report to stdout.
 func (h *Hunter) Announce() error {
 	if !h.Config.Verbose {
 		return nil
@@ -48,7 +48,7 @@ func (h *Hunter) Announce() error {
 
 	var buf bytes.Buffer
 	if err := h.Config.Template.Execute(&buf, h.Report); err != nil {
-		return oops.Wrapf(err, "failed to use custom template")
+		return oops.Wrapf(err, "failed to execute template for report")
 	}
 
 	fmt.Printf("--- Results ---\n---\n")

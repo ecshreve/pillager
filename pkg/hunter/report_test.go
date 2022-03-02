@@ -8,8 +8,8 @@ import (
 	"github.com/brittonhayes/pillager/templates"
 )
 
-// Here is an example of utilizing the Howl function on a slice
-// of findings. The Howl method is the final method in the
+// Here is an example of utilizing the Announce function on a
+// Report. The Announce method is the final method in the
 // hunting process. It takes whatever has been found and
 // outputs it for the user.
 func ExampleHunter_Announce_table() {
@@ -42,7 +42,10 @@ func ExampleHunter_Announce_table() {
 		},
 	}
 
-	h.Announce()
+	err = h.Announce()
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	// Output:
 	// --- Results ---

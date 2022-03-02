@@ -6,10 +6,10 @@ import (
 	"github.com/brittonhayes/pillager/templates"
 )
 
-// Format represents a possible output format for a Hound's findings.
+// Format represents a possible output format for a Report.
 type Format int
 
-// All possible output formats for a Hound.
+// All possible output formats for a Report.
 const (
 	JSONFormat Format = iota + 1
 	YAMLFormat
@@ -20,13 +20,15 @@ const (
 	CustomFormat
 )
 
+// FormatToTemplate is a Map of Format to the default output template string.
 var FormatToTemplate = map[Format]string{
-	JSONFormat:      templates.ParsedString,
-	YAMLFormat:      templates.ParsedString,
+	JSONFormat:      templates.JSON,
+	YAMLFormat:      templates.YAML,
 	TableFormat:     templates.Table,
 	HTMLFormat:      templates.HTML,
 	HTMLTableFormat: templates.HTMLTable,
 	MarkdownFormat:  templates.Markdown,
+	CustomFormat:    templates.Simple,
 }
 
 // IsValid is a helper method to check the Format is one of the valid values.

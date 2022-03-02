@@ -1,7 +1,6 @@
 package config
 
 import (
-	"log"
 	"os"
 	"text/template"
 
@@ -10,6 +9,8 @@ import (
 	gitleaks "github.com/zricethezav/gitleaks/v8/config"
 )
 
+// ConfigParams represents the necessary structure needed to create
+// a Config.
 type ConfigParams struct {
 	BasePath  string
 	RulesPath string
@@ -38,9 +39,14 @@ func NewConfig(p ConfigParams) (*Config, error) {
 		return nil, oops.Wrapf(err, "failed to parse rules file")
 	}
 
-	parsedTemplate, err := template.New("out-template").Parse(p.Template)
+	templateToParse := p.Template
+	if templateToParse == "" {
+		templateToParse = FormatToTemplate[p.Format]
+	}
+
+	parsedTemplate, err := template.New("out-template").Parse(templateToParse)
 	if err != nil {
-		return nil, oops.Wrapf(err, "failed to create parsed template")
+		return nil, oops.Wrapf(err, "failed to create template")
 	}
 
 	c := &Config{
@@ -59,25 +65,6 @@ func NewConfig(p ConfigParams) (*Config, error) {
 	return c, nil
 }
 
-// DefaultConfig returns a Cfg with default values for the Hunter.
-func DefaultConfig() *Config {
-	defaultConfigParams := &ConfigParams{
-		BasePath:  "",
-		RulesPath: "",
-		Verbose:   false,
-		Format:    JSONFormat,
-		Template:  "",
-		Workers:   1,
-	}
-
-	defaultConfig, err := NewConfig(*defaultConfigParams)
-	if err != nil {
-		log.Fatalln(oops.Wrapf(err, "failed to create default config"))
-	}
-
-	return defaultConfig
-}
-
 // Validate returns an error if the given Config doesn't have valid field values.
 func (c *Config) Validate() error {
 	if _, err := os.Stat(c.BasePath); err != nil {
@@ -90,6 +77,10 @@ func (c *Config) Validate() error {
 
 	if c.Workers < 1 || c.Workers > 100 {
 		return oops.Errorf("number of workers out of bounds")
+	}
+
+	if c.Template == nil {
+		return oops.Errorf("no parsed template")
 	}
 
 	if c.Rules == nil {

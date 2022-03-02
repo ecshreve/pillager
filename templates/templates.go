@@ -23,5 +23,9 @@ var (
 	//go:embed html-table.tmpl
 	HTMLTable string
 
-	ParsedString = "{{.SimpleString}}"
+	//go:embed simple-string.tmpl
+	YAML string
+
+	//go:embed simple-string.tmpl
+	JSON string
 )

@@ -1,0 +1,7 @@
+{{ with . -}}
+{{ range .Leaks -}}
+    Line: {{.StartLine}}
+    File: {{ .File }}
+    Offender: {{ .Match }}
+
+{{ end -}}{{- end}}

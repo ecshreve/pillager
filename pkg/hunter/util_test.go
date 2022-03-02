@@ -32,10 +32,33 @@ func HuntTestEnvHelper(testFilePath string, testFileContent string) (*HunterTest
 	}, nil
 }
 
+// simpleRulesForTest is the string representaton of a basic gitleaks
+// rules file in toml format.
+const simpleRulesForTest = `
+title = "gitleaks test rules"
+
+[[rules]]
+	description = "Email"
+	regex = '''[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}'''
+	tags = ["email"]
+
+[[rules]]
+	description = "Github"
+	regex = '''^.*github.*$'''
+	tags = ["github"]
+
+[allowlist]
+	description = "global allow list"
+	paths = [
+		'''gitleaks.toml''',
+		'''(.*?)(jpg|gif|doc|pdf|bin|svg|socket)$'''
+	]
+`
+
 // GetPillagerConfigForTest returns a basic gitleaks config for use in tests.
 func GetRulesForTest() (*gitleaks.Config, error) {
 	var loader gitleaks.ViperConfig
-	if _, err := toml.Decode(config.RulesForTest, &loader); err != nil {
+	if _, err := toml.Decode(simpleRulesForTest, &loader); err != nil {
 		return nil, oops.Wrapf(err, "failed to load default config toml data")
 	}
 
@@ -73,7 +96,7 @@ var ValidConfigForTest = config.Config{
 	Format:   config.JSONFormat,
 	Verbose:  false,
 	Workers:  1,
-	Template: nil,
+	Template: &template.Template{},
 	Rules:    &gitleaks.Config{Rules: []*gitleaks.Rule{}},
 }
 
@@ -82,6 +105,6 @@ var InvalidConfigForTest = config.Config{
 	Format:   config.JSONFormat,
 	Verbose:  false,
 	Workers:  1,
-	Template: nil,
+	Template: &template.Template{},
 	Rules:    &gitleaks.Config{Rules: []*gitleaks.Rule{}},
 }
