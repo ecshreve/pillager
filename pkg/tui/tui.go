@@ -36,17 +36,11 @@ func StartTUI() {
 		log.Fatalln(err)
 	}
 
-	configFlex := makeConfigFlex(h)
-	contentFlex := tview.NewFlex().SetDirection(tview.FlexColumn).
-		AddItem(configFlex, 0, 1, false).
-		AddItem(tview.NewBox().SetBorder(true).SetTitle("right"), 0, 3, false)
-
-	inputFlex := tview.NewFlex().SetDirection(tview.FlexColumn).
-		AddItem(tview.NewBox().SetBorder(true).SetTitle("bottom"), 0, 1, true)
-
 	flex := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(contentFlex, 0, 4, false).
-		AddItem(inputFlex, 0, 1, false)
+		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(makeConfigFlex(h), 0, 1, false).
+			AddItem(makeOutputFlex(), 0, 3, false), 0, 4, false).
+		AddItem(makeInputFlex(), 0, 1, false)
 
 	if err := app.SetRoot(flex, true).SetFocus(flex).Run(); err != nil {
 		panic(err)

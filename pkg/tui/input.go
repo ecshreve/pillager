@@ -3,8 +3,9 @@ package tui
 import "github.com/rivo/tview"
 
 func makeInputFlex() *tview.Flex {
-	return tview.NewFlex().
-		AddItem(tview.NewTextView().
-			SetText("Input").
-			SetDynamicColors(true), 0, 1, false)
+	flex := tview.NewFlex().SetDirection(tview.FlexColumn).
+		AddItem(tview.NewBox().SetBorder(true).SetTitle("section1"), 0, 1, true).
+		AddItem(tview.NewBox().SetBorder(true).SetTitle("section2"), 0, 1, true).
+		AddItem(tview.NewBox().SetBorder(true).SetTitle("section3"), 0, 1, true)
+	return flex
 }
