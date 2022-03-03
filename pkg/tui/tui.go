@@ -39,7 +39,7 @@ func StartTUI() {
 	flex := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
 			AddItem(makeConfigFlex(h), 0, 1, false).
-			AddItem(makeOutputFlex(), 0, 3, false), 0, 4, false).
+			AddItem(makeOutputFlex(), 0, 2, false), 0, 4, false).
 		AddItem(makeInputFlex(), 0, 1, false)
 
 	if err := app.SetRoot(flex, true).SetFocus(flex).Run(); err != nil {
