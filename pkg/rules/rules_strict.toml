@@ -1,4 +1,5 @@
 title = "Global gitleaks config"
+description = "Default Strict Rules"
 
 [allowlist]
 	description = "Allowlisted files"

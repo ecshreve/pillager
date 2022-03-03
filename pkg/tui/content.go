@@ -8,7 +8,6 @@ import (
 func makeContentFlex(c *hunter.Config) *tview.Flex {
 	configFlex := makeConfigFlex(c)
 	outputFlex := makeOutputFlex()
-	configFlex.SetBorder(true).SetTitle(" config ").SetBorderPadding(1, 1, 1, 1)
 	outputFlex.SetBorder(true).SetTitle(" output ").SetBorderPadding(1, 1, 1, 1)
 
 	flex := tview.NewFlex().

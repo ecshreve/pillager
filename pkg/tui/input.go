@@ -12,7 +12,7 @@ func makeInputFlex() *tview.Flex {
 			SetFieldWidth(0).
 			SetDoneFunc(func(key tcell.Key) {
 				app.Stop()
-			}), 0, 1, false)
+			}), 0, 1, true)
 
 	return flex
 }

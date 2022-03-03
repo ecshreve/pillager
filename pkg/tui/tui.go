@@ -45,7 +45,7 @@ func StartTUI() {
 
 	flex := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(contentFlex, 0, 3, false).
-		AddItem(inputFlex, 0, 1, true)
+		AddItem(inputFlex, 0, 1, false)
 
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Rune() {
