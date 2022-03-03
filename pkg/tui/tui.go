@@ -9,10 +9,7 @@ import (
 )
 
 var (
-	app        *tview.Application
-	configFlex *tview.Flex
-	outputFlex *tview.Flex
-	inputFlex  *tview.Flex
+	app *tview.Application
 )
 
 // customCliTheme holds the color theme for the tview TUI.
@@ -39,28 +36,19 @@ func StartTUI() {
 		log.Fatalln(err)
 	}
 
-	// Initialize the flex boxes for our content.
-	configFlex = tview.NewFlex().SetDirection(tview.FlexColumn)
-	outputFlex = tview.NewFlex().SetDirection(tview.FlexColumn)
-	inputFlex = tview.NewFlex().SetDirection(tview.FlexColumn)
+	configFlex := makeConfigFlex(h)
+	contentFlex := tview.NewFlex().SetDirection(tview.FlexColumn).
+		AddItem(configFlex, 0, 1, false).
+		AddItem(tview.NewBox().SetBorder(true).SetTitle("right"), 0, 3, false)
 
-	configFlex.SetBorder(true).SetTitle(" config ").SetBorderPadding(1, 1, 2, 1)
-	outputFlex.SetBorder(true).SetTitle(" output ").SetBorderPadding(1, 1, 1, 1)
-	inputFlex.SetBorder(true)
+	inputFlex := tview.NewFlex().SetDirection(tview.FlexColumn).
+		AddItem(tview.NewBox().SetBorder(true).SetTitle("bottom"), 0, 1, true)
 
-	configFlex.AddItem(makeConfigFlex(h), 0, 1, false)
-	outputFlex.AddItem(makeOutputFlex(), 0, 1, false)
-	inputFlex.AddItem(makeInputFlex(), 0, 1, false)
+	flex := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(contentFlex, 0, 4, false).
+		AddItem(inputFlex, 0, 1, false)
 
-	// Attach our flex boxes to the outer flex container.
-	flex := tview.NewFlex().
-		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
-			AddItem(configFlex, 10, 0, false).
-			AddItem(outputFlex, 0, 3, false).
-			AddItem(inputFlex, 0, 1, false), 0, 5, false)
-	flex.SetBackgroundColor(tview.Styles.PrimitiveBackgroundColor)
-
-	if err := app.SetRoot(flex, true).SetFocus(inputFlex).Run(); err != nil {
+	if err := app.SetRoot(flex, true).SetFocus(flex).Run(); err != nil {
 		panic(err)
 	}
 }
