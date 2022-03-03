@@ -1,7 +1,7 @@
 package tui
 
 import (
-	"log"
+	"os"
 
 	"github.com/brittonhayes/pillager/pkg/hunter"
 	"github.com/gdamore/tcell/v2"
@@ -10,6 +10,11 @@ import (
 
 var (
 	app *tview.Application
+
+	contentFlex *tview.Flex
+	inputFlex   *tview.Flex
+
+	inputField *tview.InputField
 )
 
 // customCliTheme holds the color theme for the tview TUI.
@@ -31,18 +36,30 @@ func StartTUI() {
 	app = tview.NewApplication()
 	tview.Styles = customCliTheme
 
-	h, err := hunter.New()
-	if err != nil {
-		log.Fatalln(err)
-	}
+	c := hunter.NewConfig()
+
+	contentFlex = makeContentFlex(c)
+	inputFlex = makeInputFlex()
+	contentFlex.SetBorder(true).SetTitle(" content ").SetBorderPadding(1, 1, 1, 1)
+	inputFlex.SetBorder(true).SetTitle(" input ").SetBorderPadding(1, 1, 1, 1)
 
 	flex := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-			AddItem(makeConfigFlex(h), 0, 1, false).
-			AddItem(makeOutputFlex(), 0, 2, false), 0, 4, false).
-		AddItem(makeInputFlex(), 0, 1, false)
+		AddItem(contentFlex, 0, 3, false).
+		AddItem(inputFlex, 0, 1, true)
 
-	if err := app.SetRoot(flex, true).SetFocus(flex).Run(); err != nil {
+	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Rune() {
+		case 'c':
+			app.SetFocus(contentFlex)
+		case 'q':
+			app.Stop()
+			os.Exit(0)
+		}
+
+		return event
+	})
+
+	if err := app.SetRoot(flex, true).SetFocus(inputFlex).Run(); err != nil {
 		panic(err)
 	}
 }

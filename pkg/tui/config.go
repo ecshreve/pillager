@@ -2,16 +2,19 @@ package tui
 
 import (
 	"github.com/brittonhayes/pillager/pkg/hunter"
+	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
-func makeConfigFlex(h *hunter.Hunter) *tview.Flex {
-	aboutF := makeAboutFlex()
-	aboutF.SetBorder(true).SetBorderPadding(1, 1, 2, 1)
+func makeConfigFlex(c *hunter.Config) *tview.Flex {
+	aboutFlex := makeAboutFlex()
+	currentFlex := makeCurentFlex(c)
+	aboutFlex.SetBorder(true).SetTitle(" about ").SetBorderPadding(1, 1, 1, 1)
+	currentFlex.SetBorder(true).SetTitle(" current ").SetBorderPadding(1, 1, 1, 1)
 
 	flex := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(aboutF, 0, 1, false).
-		AddItem(makeCurrentConfigFlex(h.Config), 0, 2, false)
+		AddItem(aboutFlex, 0, 1, false).
+		AddItem(currentFlex, 0, 2, true)
 	return flex
 }
 
@@ -21,10 +24,22 @@ func makeAboutFlex() *tview.Flex {
 	return flex
 }
 
-func makeCurrentConfigFlex(c *hunter.Config) *tview.Flex {
+func makeCurentFlex(c *hunter.Config) *tview.Flex {
+	form := tview.NewForm().
+		AddInputField("ScanPath", c.ScanPath, 0, nil, nil).
+		AddInputField("RulesPath", "", 20, nil, nil).
+		AddInputField("Template", "", 20, nil, nil).
+		AddCheckbox("Verbose", true, nil).
+		AddCheckbox("Redact", false, nil).
+		AddInputField("Workers", "", 0, nil, nil).
+		AddButton("Save", nil).
+		AddButton("Quit", func() {
+			app.Stop()
+		})
+	form.SetFieldBackgroundColor(tcell.ColorBlue)
+	form.SetBorder(true).SetTitle("Enter some data").SetTitleAlign(tview.AlignLeft)
+
 	flex := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(tview.NewBox().SetBorder(true).SetTitle("path"), 0, 1, false).
-		AddItem(tview.NewBox().SetBorder(true).SetTitle("rules"), 0, 1, false).
-		AddItem(tview.NewBox().SetBorder(true).SetTitle("verbose"), 0, 1, false)
+		AddItem(form, 0, 1, true)
 	return flex
 }
