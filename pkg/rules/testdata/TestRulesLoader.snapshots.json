@@ -1,0 +1,764 @@
+[
+  {
+    "Name": "simple",
+    "Values": [
+      {
+        "Allowlist": {
+          "Commits": null,
+          "Description": "",
+          "Paths": null,
+          "Regexes": null
+        },
+        "Description": "",
+        "Path": "",
+        "Rules": [
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "AWS Access Key",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "key",
+              "AWS"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "AWS Secret Key",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "key",
+              "AWS"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "Github",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "key",
+              "Github"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "Slack",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "key",
+              "Slack"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "Asymmetric Private Key",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "key",
+              "AsymmetricPrivateKey"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "Slack Webhook",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "key",
+              "slack"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Name": "strict",
+    "Values": [
+      {
+        "Allowlist": {
+          "Commits": null,
+          "Description": "",
+          "Paths": [
+            {},
+            {},
+            {},
+            {}
+          ],
+          "Regexes": [
+            {}
+          ]
+        },
+        "Description": "",
+        "Path": "",
+        "Rules": [
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "AWS Secret Key",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "key",
+              "AWS"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "AWS MWS key",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "key",
+              "AWS",
+              "MWS"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "Facebook Secret Key",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "key",
+              "Facebook"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "Facebook Client ID",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "key",
+              "Facebook"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "Twitter Secret Key",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "key",
+              "Twitter"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "Twitter Client ID",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "client",
+              "Twitter"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "Github",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "key",
+              "Github"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "LinkedIn Client ID",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "client",
+              "LinkedIn"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "LinkedIn Secret Key",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "secret",
+              "LinkedIn"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "Slack",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "key",
+              "Slack"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "Asymmetric Private Key",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "key",
+              "AsymmetricPrivateKey"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "Google API key",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "key",
+              "Google"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "Google (GCP) Service Account",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "key",
+              "Google"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "Heroku API key",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "key",
+              "Heroku"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "MailChimp API key",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "key",
+              "Mailchimp"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "Mailgun API key",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "key",
+              "Mailgun"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "PayPal Braintree access token",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "key",
+              "Paypal"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "Picatic API key",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "key",
+              "Picatic"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "SendGrid API Key",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "key",
+              "SendGrid"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "Slack Webhook",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "key",
+              "slack"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "Stripe API key",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "key",
+              "Stripe"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "Square access token",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "key",
+              "square"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "Square OAuth secret",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "key",
+              "square"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "Twilio API key",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "key",
+              "twilio"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "Hardcoded credentials in Go files",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "credentials",
+              "hardcoded",
+              "go"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "Hardcoded credentials in JavaScript or TypeScript files",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "credentials",
+              "hardcoded",
+              "js"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "Hardcoded credentials in PHP files",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "credentials",
+              "hardcoded",
+              "php"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": [
+                {},
+                {},
+                {},
+                {}
+              ]
+            },
+            "Description": "Hardcoded credentials in YAML files as quoted strings",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "credentials",
+              "hardcoded",
+              "yaml"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": [
+                {},
+                {},
+                {},
+                {}
+              ]
+            },
+            "Description": "Hardcoded credentials in YAML files as unquoted strings",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "credentials",
+              "hardcoded",
+              "yaml"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "Hardcoded credentials in YAML files as multiline strings",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "credentials",
+              "hardcoded",
+              "yaml"
+            ]
+          },
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": [
+                {}
+              ]
+            },
+            "Description": "Hardcoded credentials in HCL files (*.tf)",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "credentials",
+              "hardcoded",
+              "hcl"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Name": "from file",
+    "Values": [
+      {
+        "Allowlist": {
+          "Commits": null,
+          "Description": "",
+          "Paths": null,
+          "Regexes": null
+        },
+        "Description": "",
+        "Path": "",
+        "Rules": [
+          {
+            "Allowlist": {
+              "Commits": null,
+              "Description": "",
+              "Paths": null,
+              "Regexes": null
+            },
+            "Description": "AWS Access Key",
+            "Entropy": 0,
+            "Path": null,
+            "Regex": {},
+            "RuleID": "",
+            "SecretGroup": 0,
+            "Tags": [
+              "key",
+              "AWS"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
