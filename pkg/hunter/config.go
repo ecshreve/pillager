@@ -7,14 +7,12 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"github.com/spf13/afero"
+	"github.com/zricethezav/gitleaks/v8/config"
 
 	"github.com/brittonhayes/pillager/internal/validate"
-
 	"github.com/brittonhayes/pillager/pkg/format"
 	"github.com/brittonhayes/pillager/pkg/rules"
-	"github.com/spf13/afero"
-
-	"github.com/zricethezav/gitleaks/v8/config"
 )
 
 // Config takes all of the configurable parameters for a Hunter.
@@ -26,7 +24,6 @@ type Config struct {
 	ScanPath string
 	Verbose  bool
 	Redact   bool
-	Debug    bool
 	Workers  int
 	Template string
 }
@@ -78,7 +75,7 @@ func WithFS(fs afero.Fs) ConfigOption {
 
 func WithScanPath(path string) ConfigOption {
 	return func(c *Config) {
-		c.ScanPath = validate.Path(c.Filesystem, c.ScanPath)
+		c.ScanPath = validate.Path(c.Filesystem, path)
 	}
 }
 
