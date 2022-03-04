@@ -1,0 +1,77 @@
+[
+  {
+    "Name": "default",
+    "Values": [
+      {
+        "Filesystem": {},
+        "Gitleaks": {
+          "Allowlist": {
+            "Commits": null,
+            "Description": "",
+            "Paths": null,
+            "Regexes": null
+          },
+          "Description": "",
+          "Path": "",
+          "Rules": null
+        },
+        "Redact": false,
+        "Reporter": {},
+        "ScanPath": ".",
+        "Template": "",
+        "Verbose": false,
+        "Workers": 8
+      }
+    ]
+  },
+  {
+    "Name": "verbose true",
+    "Values": [
+      {
+        "Filesystem": {},
+        "Gitleaks": {
+          "Allowlist": {
+            "Commits": null,
+            "Description": "",
+            "Paths": null,
+            "Regexes": null
+          },
+          "Description": "",
+          "Path": "",
+          "Rules": null
+        },
+        "Redact": false,
+        "Reporter": {},
+        "ScanPath": ".",
+        "Template": "",
+        "Verbose": true,
+        "Workers": 8
+      }
+    ]
+  },
+  {
+    "Name": "set some fields",
+    "Values": [
+      {
+        "Filesystem": {},
+        "Gitleaks": {
+          "Allowlist": {
+            "Commits": null,
+            "Description": "",
+            "Paths": null,
+            "Regexes": null
+          },
+          "Description": "",
+          "Path": "",
+          "Rules": null
+        },
+        "Redact": true,
+        "Reporter": {},
+        "ScanPath": "./testdata",
+        "Template": "",
+        "Verbose": true,
+        "Workers": 3
+      }
+    ]
+  }
+]
